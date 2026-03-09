@@ -79,7 +79,7 @@ void RESET_JOGO (struct TUBOS colunas []);
 
 void GERAÇÃO_0 (PESSOA x []);
 
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, PESSOA x [i]);
+double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA x);
 
 void NEXT_GERAÇÕES (PESSOA x [], int ELITES);
 void FILHOS_NEXT_GERAÇÕES (PESSOA *PAI1, PESSOA *PAI2, PESSOA *FILHO, int NÚMERO_DE_GENES);
@@ -295,7 +295,10 @@ void GERAÇÃO_0 (PESSOA x []) {
 
 
 
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, PESSOA x [i]) {
+double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA x ) {
+
+
+
 
     
 
@@ -305,7 +308,8 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, PESSO
            
             x.NEURÓNIO_HIDDEN_LAYER[k] = INPUT1 * x.GENES[index++] +
                                      INPUT2 * x.GENES[index++] +
-                                     INPUT3 * x.GENES[index++];
+                                     INPUT3 * x.GENES[index++] +
+                                     INPUT4 * x.GENES[index++];
                                                 
                                      
             x.NEURÓNIO_HIDDEN_LAYER[k] += x.GENES[index++];
@@ -315,7 +319,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, PESSO
                
         for (int j = 0; j < 5; j++) {
             
-            x.OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_ReLU (x.HIDDEN_NEURONS[j]);
+            x.OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_ReLU (x.NEURÓNIO_HIDDEN_LAYER[j]);
         
             }
         
@@ -424,7 +428,7 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
         x[i].FITNESS ++;
 
         x[i].VELOCIDADE_Y += GRAVIDADE;
-        x[i].POS_INICIAL_Y += x[i].VELOCIDADE_y;
+        x[i].POS_INICIAL_Y += x[i].VELOCIDADE_Y;
 
 
         
@@ -500,7 +504,7 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
                        (double) x[i].X_TO_NEXTPIPE / (double) LARGURA,
                        (double) x[i].VELOCIDADE_Y / (double) 10.0,
                        ((double) x[i].CENTRO_COORDENADA_PIPE - (double) x[i].POS_INICIAL_Y) / (double) ALTURA, 
-                       x[i);
+                       x[i]);
 
         
         if (output > 0.0) {
