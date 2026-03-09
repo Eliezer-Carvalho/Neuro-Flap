@@ -46,7 +46,7 @@ typedef struct {
     double VELOCITY_Y; //INPUT 3
 
 
-    
+    //nfgnfgndfn
     double HIDDEN_NEURONS [5];
     double RELU_HIDDEN_NEURONS [5];
     double OUTPUT;
@@ -165,9 +165,20 @@ void FILHOS (INDIVIDUAL *PAI1, INDIVIDUAL *PAI2, INDIVIDUAL *FILHO, int NÚMERO_
 
 
 	for (int i = 0; i < NÚMERO_GENES; i++) {
+        
+        int NUM_RANDOM = (rand() % 2);
+            
+            if (NUM_RANDOM == 0) {
+    
+                FILHO -> GENES[i] = PAI1 -> GENES [i];              
+        } 
 
-		FILHO -> GENES[i] = (rand() % 2) ? PAI1 -> GENES[i] : PAI2 -> GENES[i];
-	}
+            else {
+
+                FILHO -> GENES [i] = PAI2 -> GENES[i];	
+        }
+    
+    }
 
 
 	for (int i = 0; i < NÚMERO_GENES; i++) {
