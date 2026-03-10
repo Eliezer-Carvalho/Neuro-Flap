@@ -79,7 +79,7 @@ void RESET_JOGO (struct TUBOS colunas []);
 
 void GERAÇÃO_0 (PESSOA x []);
 
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA x);
+double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x);
 
 void NEXT_GERAÇÕES (PESSOA x [], int ELITES);
 void FILHOS_NEXT_GERAÇÕES (PESSOA *PAI1, PESSOA *PAI2, PESSOA *FILHO, int NÚMERO_DE_GENES);
@@ -97,7 +97,8 @@ int main () {
     InitWindow (LARGURA, ALTURA, "Neuro Flap");
     SetTargetFPS (FPS);
 
-    Texture2D Flappy = LoadTexture("Background/flappybird2.png");
+    Texture2D Flappy = LoadTexture("Background/frame-2.png");
+    Texture2D Fundo = LoadTexture ("Background/90408277_2310-w062-n005-288B-p15-288_cropped.jpg");
 
     
     struct TUBOS colunas [NÚMERO_TUBOS];
@@ -115,13 +116,13 @@ int main () {
         colunas[i].ALTURA_TUBO_CIMA = ALTURA_TUBO_CIMA;
         colunas[i].ALTURA_TUBO_BAIXO = ALTURA_TUBO_BAIXO;
 
-        colunas[i].POS_EIXO_X += 300;
+        POS_INICIAL_X_PRIMEIRO_PIPE += 300;
 
 	}
 
 
-    int HITBOX_FLAPPY_X = Flappy.width * 0.5 * 0.75; 
-	int HITBOX_FLAPPY_Y = Flappy.height * 0.5 * 0.71;
+    int HITBOX_FLAPPY_X = Flappy.width * 0.1 * 0.75; 
+	int HITBOX_FLAPPY_Y = Flappy.height * 0.1 * 0.71;
 
 
     PESSOA x [POPULAÇÃO];
@@ -131,7 +132,7 @@ int main () {
 
     while (!WindowShouldClose()) {
 
-
+        MAIN_LOOP (x, HITBOX_FLAPPY_X, HITBOX_FLAPPY_Y, colunas, Flappy);
 
         for (int i = 0; i < NÚMERO_TUBOS; i++) {
            
@@ -183,8 +184,13 @@ int main () {
 		BeginDrawing();
 		ClearBackground(SKYBLUE);
 
+
+        //DrawTexture(Fundo, 0, 0, WHITE);
+        DrawTextureEx(Fundo, (Vector2) {0, 0}, 0, 1, WHITE); 
+
+
         for (int i = 0; i < POPULAÇÃO; i++) {
-		    DrawTextureEx(Flappy, (Vector2) {x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.5,  WHITE);
+		    DrawTextureEx(Flappy, (Vector2) {x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.1,  WHITE);
 	    }
 		
 
@@ -250,7 +256,7 @@ double FUNÇÃO_ATIVAÇÃO_ReLU (double x) {
 void RESET_JOGO (struct TUBOS colunas []) {
 
 
-    float POS_INICIAL_X_PRIMEIRO_PIPE = 680;
+    float POS_INICIAL_X_PRIMEIRO_PIPE_2 = 680;
 
     for (int i = 0; i < NÚMERO_TUBOS; i++) {
 	
@@ -259,11 +265,11 @@ void RESET_JOGO (struct TUBOS colunas []) {
         int ALTURA_TUBO_BAIXO = ALTURA - ALTURA_TUBO_CIMA - TUBO_GAP;
 
        
-        colunas[i].POS_EIXO_X = POS_INICIAL_X_PRIMEIRO_PIPE;
+        colunas[i].POS_EIXO_X = POS_INICIAL_X_PRIMEIRO_PIPE_2;
         colunas[i].ALTURA_TUBO_CIMA = ALTURA_TUBO_CIMA;
         colunas[i].ALTURA_TUBO_BAIXO = ALTURA_TUBO_BAIXO;
 
-        colunas[i].POS_EIXO_X += 300;
+        POS_INICIAL_X_PRIMEIRO_PIPE_2 += 300;
 
 	}
 
@@ -295,7 +301,7 @@ void GERAÇÃO_0 (PESSOA x []) {
 
 
 
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA x ) {
+double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x ) {
 
 
 
@@ -306,34 +312,35 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
         
         for (int k = 0; k < 5; k++) {
            
-            x.NEURÓNIO_HIDDEN_LAYER[k] = INPUT1 * x.GENES[index++] +
-                                     INPUT2 * x.GENES[index++] +
-                                     INPUT3 * x.GENES[index++] +
-                                     INPUT4 * x.GENES[index++];
+            x -> NEURÓNIO_HIDDEN_LAYER[k] = INPUT1 * x -> GENES[index++] +
+                                     INPUT2 * x -> GENES[index++] +
+                                     INPUT3 * x -> GENES[index++] +
+                                     INPUT4 * x -> GENES[index++];
                                                 
                                      
-            x.NEURÓNIO_HIDDEN_LAYER[k] += x.GENES[index++];
+            x -> NEURÓNIO_HIDDEN_LAYER[k] += x -> GENES[index++];
                         
             }
 
                
         for (int j = 0; j < 5; j++) {
             
-            x.OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_ReLU (x.NEURÓNIO_HIDDEN_LAYER[j]);
+            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_SIGMOID (x -> NEURÓNIO_HIDDEN_LAYER[j]);
         
             }
         
 
-        x.OUTPUT = 0;
+        x -> OUTPUT = 0;
         for (int z = 0; z < 5; z++) {
 
-            x.OUTPUT += x.OUTPUT_NEURÓNIO_HIDDEN_LAYER[z] * x.GENES[index++];
+            x -> OUTPUT += x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[z] * x -> GENES[index++];
         }
 
-        x.OUTPUT += x.GENES[NÚMERO_GENES - 1];
+        x -> OUTPUT += x -> GENES[NÚMERO_GENES - 1];
 
-        x.OUTPUT = FUNÇÃO_ATIVAÇÃO_SIGMOID(x.OUTPUT);
+        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_ReLU(x -> OUTPUT);
 
+        return x -> OUTPUT;
     
 }
 
@@ -504,7 +511,7 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
                        (double) x[i].X_TO_NEXTPIPE / (double) LARGURA,
                        (double) x[i].VELOCIDADE_Y / (double) 10.0,
                        ((double) x[i].CENTRO_COORDENADA_PIPE - (double) x[i].POS_INICIAL_Y) / (double) ALTURA, 
-                       x[i]);
+                       &x[i]);
 
         
         if (output > 0.0) {
