@@ -86,7 +86,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
 void NEXT_GERAÇÕES (PESSOA x [], int ELITES);
 void FILHOS_NEXT_GERAÇÕES (PESSOA *PAI1, PESSOA *PAI2, PESSOA *FILHO, int NÚMERO_DE_GENES);
 
-void MAIN_LOOP (PESSOA x [], int HITBOX_BONECO_X, int HITBOX_BONECO_Y, struct TUBOS colunas[], Texture2D Flappy);
+void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy);
 
 
 
@@ -122,10 +122,6 @@ int main () {
 	}
 
 
-    int HITBOX_FLAPPY_X = Flappy.width * 0.45 * 0.70; 
-	int HITBOX_FLAPPY_Y = Flappy.height * 0.45 * 0.71;
-
-
     PESSOA x [POPULAÇÃO];
     
     GERAÇÃO_0 (x);
@@ -133,7 +129,7 @@ int main () {
 
     while (!WindowShouldClose()) {
 
-        MAIN_LOOP (x, HITBOX_FLAPPY_X, HITBOX_FLAPPY_Y, colunas, Flappy);
+        MAIN_LOOP (x, colunas, Flappy);
 
         for (int i = 0; i < NÚMERO_TUBOS; i++) {
            
@@ -200,6 +196,13 @@ int main () {
 
         for (int i = 0; i < POPULAÇÃO; i++) {
 		    DrawTextureEx(Flappy, (Vector2) {x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.45, RAYWHITE);
+            
+            
+
+            DrawCircle (x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2) + 10,
+                        x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2) + 3, 20, BLACK);
+
+
         }
 		
 
@@ -438,7 +441,7 @@ void FILHOS_NEXT_GERAÇÕES (PESSOA *PAI1, PESSOA *PAI2, PESSOA *FILHO, int NÚM
 
 
 
-void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TUBOS colunas[], Texture2D Flappy) {
+void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
 
 
     for (int i = 0; i < POPULAÇÃO; i++) {
@@ -458,11 +461,9 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
 
 
 
-        Rectangle FLAPPYHITBOX = {
-                                x[i].POS_INICIAL_X + (Flappy.width * 0.55 - HITBOX_FLAPPY_X) / 2,
-                                x[i].POS_INICIAL_Y + (Flappy.height * 0.5 - HITBOX_FLAPPY_Y) / 2,
-                                HITBOX_FLAPPY_X,
-                                HITBOX_FLAPPY_Y
+        Vector2 FLAPPYHITBOX = {
+                                x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2) + 10,
+                                x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2) + 3,
                         };
     
        
@@ -474,8 +475,8 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
 
 
 
-            COLISÃO_CIMA = CheckCollisionRecs (FLAPPYHITBOX, TUBOCIMA);
-            COLISÃO_BAIXO = CheckCollisionRecs (FLAPPYHITBOX, TUBOBAIXO);
+            COLISÃO_CIMA = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOCIMA);
+            COLISÃO_BAIXO = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOBAIXO);
 
 
             if (colunas[j].POS_EIXO_X + 85 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
