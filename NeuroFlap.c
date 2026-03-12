@@ -517,7 +517,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
         }
 
 
-        if (x[i].POS_INICIAL_Y > (ALTURA - 35) || x[i].POS_INICIAL_Y <= 0) {
+        if (x[i].POS_INICIAL_Y > (ALTURA - 40) || x[i].POS_INICIAL_Y <= 0) {
 
             x[i].VIVO = false;
            
