@@ -151,6 +151,8 @@ int main () {
         if (MORTES >= POPULAÇÃO) {
 
 			NEXT_POPULATION = true;
+
+            fprintf (LOGS, "\n GERAÇÃO %i \n -----------------------------------------------------", GERAÇÃO);
             
             for (int i = 0; i < POPULAÇÃO; i++) {
                 
@@ -160,9 +162,12 @@ int main () {
 
                     fprintf(LOGS, "Genes %i -> %lf \n", j, x[i].GENES[j]);
                 }
-                
-                fprintf(LOGS, "FITNESS = %lf \n", x[i].STORED_FITNESS);                
+            }
             
+            for (int i = 0; i < POPULAÇÃO; i++) {
+            
+               fprintf(LOGS, "Fitness Indivíduo %i = %lf \n", i, x[i].STORED_FITNESS);   
+                
             }
         }
 
@@ -314,7 +319,7 @@ void GERAÇÃO_0 (PESSOA x []) {
             x[i].VIVO = true;
 
             x[i].POS_INICIAL_X = 150;
-            x[i].POS_INICIAL_Y = 20 + ((double)rand() / RAND_MAX) * (ALTURA - 20);
+            x[i].POS_INICIAL_Y = 40 + ((double)rand() / RAND_MAX) * (ALTURA - 40);
             x[i].VELOCIDADE_Y = 0.5;
 
 
@@ -402,7 +407,7 @@ void NEXT_GERAÇÕES (PESSOA x [], int ELITES) {
         x[i].VIVO = true;
 
         x[i].POS_INICIAL_X = 150;
-        x[i].POS_INICIAL_Y = 20 + ((double)rand() / RAND_MAX) * (ALTURA + 20);
+        x[i].POS_INICIAL_Y = 40 + ((double)rand() / RAND_MAX) * (ALTURA + 40);
         x[i].VELOCIDADE_Y = 0.5;
 
 
@@ -479,8 +484,8 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
 
 
 
-            COLISÃO_CIMA = CheckCollisionCircleRec (FLAPPYHITBOX, 16, TUBOCIMA);
-            COLISÃO_BAIXO = CheckCollisionCircleRec (FLAPPYHITBOX, 16, TUBOBAIXO);
+            COLISÃO_CIMA = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOCIMA);
+            COLISÃO_BAIXO = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOBAIXO);
 
 
             if (colunas[j].POS_EIXO_X + 85 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
