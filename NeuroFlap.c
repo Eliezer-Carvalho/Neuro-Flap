@@ -101,7 +101,9 @@ int main () {
 
     Texture2D Flappy = LoadTexture("Background/flappybird2.png");
     
+    Font teste = LoadFont ("/home/eliezer/The Perceptron/basic_square_7_solid.ttf");
 
+    const char testeee[256] = "TESTE"; 
     
     struct TUBOS colunas [NÚMERO_TUBOS];
     float POS_INICIAL_X_PRIMEIRO_PIPE = 680;
@@ -123,8 +125,8 @@ int main () {
 	}
 
 
-    int HITBOX_FLAPPY_X = Flappy.width * 0.5 * 0.75; 
-	int HITBOX_FLAPPY_Y = Flappy.height * 0.5 * 0.71;
+    int HITBOX_FLAPPY_X = Flappy.width * 0.45 * 0.70; 
+	int HITBOX_FLAPPY_Y = Flappy.height * 0.45 * 0.71;
 
 
     PESSOA x [POPULAÇÃO];
@@ -187,10 +189,12 @@ int main () {
 
             if (x[i].VIVO == false) {
                    
-                //x[i].POS_INICIAL_Y += 12.0f;
-                x[i].POS_INICIAL_X = -150;
+                //x[i].POS_INICIAL_Y += 10.0f;
+                x[i].POS_INICIAL_X -= 3.0f;
             }    
         }
+
+
 
 		BeginDrawing();
 		ClearBackground(DARKBLUE);
@@ -198,21 +202,24 @@ int main () {
 
 
         for (int i = 0; i < POPULAÇÃO; i++) {
-		    DrawTextureEx(Flappy, (Vector2) {x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.5, RAYWHITE);
-	    }
+		    DrawTextureEx(Flappy, (Vector2) {x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.45, RAYWHITE);
+        }
 		
 
 		for (int i = 0; i < NÚMERO_TUBOS; i++) {
 			
-			DrawRectangle (colunas[i].POS_EIXO_X, 0, 75, colunas[i].ALTURA_TUBO_CIMA, LIME);
-			DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 75, colunas[i].ALTURA_TUBO_BAIXO, LIME);
+			DrawRectangle (colunas[i].POS_EIXO_X, 0, 85, colunas[i].ALTURA_TUBO_CIMA, WHITE);
+			DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 85, colunas[i].ALTURA_TUBO_BAIXO, WHITE);
 		}
 
-	
+
+        
 
 		DrawText(TextFormat("GERAÇÃO = %i", GERAÇÃO), 10, 80, 20, BLACK);		
 		DrawText(TextFormat("MORTES = %i", MORTES), 10, 120, 20, BLACK);
         DrawText(TextFormat("MELHOR FITNESS = %lf", best), 10, 160, 20, RED);
+
+        DrawTextEx(teste, testeee, (Vector2) {20.0f, 100.0f}, 40, 0.5, RED);
      
 
 
@@ -455,8 +462,8 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
 
 
         Rectangle FLAPPYHITBOX = {
-                                x[i].POS_INICIAL_X + (Flappy.width * 0.6 - HITBOX_FLAPPY_X) / 2,
-                                x[i].POS_INICIAL_Y + (Flappy.height * 0.55 - HITBOX_FLAPPY_Y) / 2,
+                                x[i].POS_INICIAL_X + (Flappy.width * 0.55 - HITBOX_FLAPPY_X) / 2,
+                                x[i].POS_INICIAL_Y + (Flappy.height * 0.5 - HITBOX_FLAPPY_Y) / 2,
                                 HITBOX_FLAPPY_X,
                                 HITBOX_FLAPPY_Y
                         };
@@ -465,8 +472,8 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
         for (int j = 0; j < NÚMERO_TUBOS; j++) {
 
 
-            Rectangle TUBOCIMA = {colunas[j].POS_EIXO_X, 0, 75, colunas[j].ALTURA_TUBO_CIMA};
-            Rectangle TUBOBAIXO = {colunas[j].POS_EIXO_X + 2, (ALTURA - colunas[j].ALTURA_TUBO_BAIXO), 75, colunas[j].ALTURA_TUBO_BAIXO};
+            Rectangle TUBOCIMA = {colunas[j].POS_EIXO_X, 0, 85, colunas[j].ALTURA_TUBO_CIMA};
+            Rectangle TUBOBAIXO = {colunas[j].POS_EIXO_X + 2, (ALTURA - colunas[j].ALTURA_TUBO_BAIXO), 85, colunas[j].ALTURA_TUBO_BAIXO};
 
 
 
@@ -474,7 +481,7 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
             COLISÃO_BAIXO = CheckCollisionRecs (FLAPPYHITBOX, TUBOBAIXO);
 
 
-            if (colunas[j].POS_EIXO_X + 90 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
+            if (colunas[j].POS_EIXO_X + 85 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
                 NEXTPIPE = j;
             }
 
@@ -500,7 +507,7 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
 
        if (NEXTPIPE != -1) {
 
-            x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 75) - x[i].POS_INICIAL_X;
+            x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 85) - x[i].POS_INICIAL_X;
 
             x[i].CENTRO_COORDENADA_PIPE = colunas[NEXTPIPE].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0);
         }
