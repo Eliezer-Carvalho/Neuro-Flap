@@ -99,7 +99,7 @@ int main () {
     InitWindow (LARGURA, ALTURA, "Neuro Flap");
     SetTargetFPS (FPS);
 
-    Texture2D Flappy = LoadTexture("Background/frame-41.png");
+    Texture2D Flappy = LoadTexture("Background/flappybird2.png");
     
 
     
@@ -204,8 +204,8 @@ int main () {
 
 		for (int i = 0; i < NÚMERO_TUBOS; i++) {
 			
-			DrawRectangle (colunas[i].POS_EIXO_X, 0, 90, colunas[i].ALTURA_TUBO_CIMA, GRAY);
-			DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 90, colunas[i].ALTURA_TUBO_BAIXO, GRAY);
+			DrawRectangle (colunas[i].POS_EIXO_X, 0, 75, colunas[i].ALTURA_TUBO_CIMA, LIME);
+			DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 75, colunas[i].ALTURA_TUBO_BAIXO, LIME);
 		}
 
 	
@@ -465,8 +465,8 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
         for (int j = 0; j < NÚMERO_TUBOS; j++) {
 
 
-            Rectangle TUBOCIMA = {colunas[j].POS_EIXO_X, 0, 90, colunas[j].ALTURA_TUBO_CIMA};
-            Rectangle TUBOBAIXO = {colunas[j].POS_EIXO_X + 2, (ALTURA - colunas[j].ALTURA_TUBO_BAIXO), 90, colunas[j].ALTURA_TUBO_BAIXO};
+            Rectangle TUBOCIMA = {colunas[j].POS_EIXO_X, 0, 75, colunas[j].ALTURA_TUBO_CIMA};
+            Rectangle TUBOBAIXO = {colunas[j].POS_EIXO_X + 2, (ALTURA - colunas[j].ALTURA_TUBO_BAIXO), 75, colunas[j].ALTURA_TUBO_BAIXO};
 
 
 
@@ -500,7 +500,7 @@ void MAIN_LOOP (PESSOA x [], int HITBOX_FLAPPY_X, int HITBOX_FLAPPY_Y, struct TU
 
        if (NEXTPIPE != -1) {
 
-            x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 90) - x[i].POS_INICIAL_X;
+            x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 75) - x[i].POS_INICIAL_X;
 
             x[i].CENTRO_COORDENADA_PIPE = colunas[NEXTPIPE].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0);
         }
