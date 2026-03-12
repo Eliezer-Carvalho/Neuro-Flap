@@ -195,12 +195,16 @@ int main () {
 
 
         for (int i = 0; i < POPULAÇÃO; i++) {
-		    DrawTextureEx(Flappy, (Vector2) {x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.45, RAYWHITE);
-            
-            
+		    
+            float ROTAÇÃO = x[i].VELOCIDADE_Y * 2.0f;
 
-            DrawCircle (x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2) + 10,
-                        x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2) + 3, 20, BLACK);
+            if (ROTAÇÃO > 50) ROTAÇÃO = -50;
+            if (ROTAÇÃO < -50) ROTAÇÃO = 50;
+
+            DrawTextureEx(Flappy, (Vector2){x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, ROTAÇÃO, 0.45, RAYWHITE);
+
+            DrawCircle (x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2) + 12,
+                        x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2) + x[i].VELOCIDADE_Y * 2.0f, 18, BLACK);
 
 
         }
@@ -310,7 +314,7 @@ void GERAÇÃO_0 (PESSOA x []) {
             x[i].VIVO = true;
 
             x[i].POS_INICIAL_X = 150;
-            x[i].POS_INICIAL_Y = ((double)rand() / RAND_MAX) * ALTURA;
+            x[i].POS_INICIAL_Y = 20 + ((double)rand() / RAND_MAX) * (ALTURA - 20);
             x[i].VELOCIDADE_Y = 0.5;
 
 
@@ -398,7 +402,7 @@ void NEXT_GERAÇÕES (PESSOA x [], int ELITES) {
         x[i].VIVO = true;
 
         x[i].POS_INICIAL_X = 150;
-        x[i].POS_INICIAL_Y = ((double)rand() / RAND_MAX) * ALTURA;
+        x[i].POS_INICIAL_Y = 20 + ((double)rand() / RAND_MAX) * (ALTURA + 20);
         x[i].VELOCIDADE_Y = 0.5;
 
 
@@ -462,8 +466,8 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
 
 
         Vector2 FLAPPYHITBOX = {
-                                x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2) + 10,
-                                x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2) + 3,
+                                x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2) + 12,
+                                x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2) + x[i].VELOCIDADE_Y * 2.0f
                         };
     
        
@@ -475,8 +479,8 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
 
 
 
-            COLISÃO_CIMA = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOCIMA);
-            COLISÃO_BAIXO = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOBAIXO);
+            COLISÃO_CIMA = CheckCollisionCircleRec (FLAPPYHITBOX, 18, TUBOCIMA);
+            COLISÃO_BAIXO = CheckCollisionCircleRec (FLAPPYHITBOX, 18, TUBOBAIXO);
 
 
             if (colunas[j].POS_EIXO_X + 85 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
