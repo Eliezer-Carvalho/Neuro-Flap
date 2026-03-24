@@ -21,6 +21,7 @@
 bool COLISÃO_CIMA = false;
 bool COLISÃO_BAIXO = false;
 bool NEXT_POPULATION = false;
+bool GAME_OVER = false;
 
 
 int TUBO_GAP = 180; //INPUT 1
@@ -134,10 +135,6 @@ int main () {
         
     
 
-    
-
-
-
     while (!WindowShouldClose()) {
 
         
@@ -176,6 +173,14 @@ int main () {
         }
 
 
+        if (GAME_OVER == true) {
+
+            UnloadTexture(Flappy);
+		    CloseWindow();
+            fclose(LOGS);
+
+        }
+
 
 		if (NEXT_POPULATION == true) {
             
@@ -187,6 +192,9 @@ int main () {
 			NEXT_POPULATION = false;
             
 		}
+
+
+        
 
 
         for (int i = 0; i < POPULAÇÃO; i++) {
@@ -339,11 +347,6 @@ void GERAÇÃO_0 (PESSOA x []) {
 
 double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x ) {
 
-
-
-
-    
-
     int index = 0;
         
         for (int k = 0; k < 5; k++) {
@@ -379,6 +382,8 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
         return x -> OUTPUT;
     
 }
+
+
 
 
 void NEXT_GERAÇÕES (PESSOA x [], int ELITES) {
@@ -544,8 +549,9 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
         if (NEXTPIPE == -1 && x[i].VIVO == true) {
 
                 x[i].VIVO = false;
-                x[i].STORED_FITNESS = x[i].FITNESS + 10000; // bónus de vitória
+                x[i].STORED_FITNESS = x[i].FITNESS + 500000; // bónus de vitória
                 MORTES += 1;
+                GAME_OVER = true;
 
         }
 
