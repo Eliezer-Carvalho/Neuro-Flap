@@ -78,6 +78,11 @@ int COMPARAÇÃO (const void *a, const void *b);
 
 double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x);
 double FUNÇÃO_ATIVAÇÃO_ReLU (double x);
+double FUNÇÃO_ATIVAÇÃO_TANH (double x);
+double FUNÇÃO_ATIVAÇÃO_LEAKY_ReLU (double x);
+
+double FUNÇÃO_NORMALIZAÇÃO_DADOS_MIN_MAX_SCALING (double x);
+
 
 void RESET_JOGO (struct TUBOS colunas []);
 
@@ -132,8 +137,7 @@ int main () {
     FILE* LOGS;
 
     LOGS = fopen ("4INPUTSNORMALIZADOS_5NEURÓNIOS_SIGMOID_RELU.txt", "w");
-        
-    
+         
 
     while (!WindowShouldClose()) {
 
@@ -143,7 +147,7 @@ int main () {
 
         for (int i = 0; i < NÚMERO_TUBOS; i++) {
            
-             colunas[i].POS_EIXO_X -= 2.9;
+             colunas[i].POS_EIXO_X -= 3.0;
 		}	
 
  
@@ -218,14 +222,22 @@ int main () {
 
         for (int i = 0; i < POPULAÇÃO; i++) {
 		    
-            DrawTextureEx(Flappy, (Vector2){x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.45, RAYWHITE);
-
-            // Debug DrawCircle (x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2 + 10),
+            DrawTextureEx(Flappy, (Vector2){x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.45, RAYWHITE); 
+           // Debug DrawCircle (x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2 + 10),
             //           x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2), 20, BLACK);
 
-
         }
-		
+
+/*
+        DrawText(TextFormat("Input 1 = %lf", (double) x[40].POS_INICIAL_Y / (double) ALTURA), 30, 110, 25, BLACK);
+        DrawText(TextFormat("Input 2 = %lf", (double) x[40].X_TO_NEXTPIPE / (double) LARGURA), 30, 140, 25, BLACK);
+        DrawText(TextFormat("Input 3 = %lf", (double) x[40].VELOCIDADE_Y / (double) 10.0), 30, 170, 25, BLACK);
+
+        double minus = (double) x[40].CENTRO_COORDENADA_PIPE - (double) x[40].POS_INICIAL_Y;
+        DrawText(TextFormat("Input 4 = %lf", minus / (double) ALTURA), 30, 200, 25, BLACK);
+
+        DEBUG
+*/		
 
 		for (int i = 0; i < NÚMERO_TUBOS; i++) {
 			
@@ -283,16 +295,40 @@ double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x) {
 
 double FUNÇÃO_ATIVAÇÃO_ReLU (double x) {
 
-    
     if (x < 0) {
 
         return 0;                
     }
 
     return x;
+}
+
+
+double FUNÇÃO_ATIVAÇÃO_TANH (double x) {
+
+    return tanh (x);
 
 }
 
+
+double FUNÇÃO_ATIVAÇÃO_LEAKY_ReLU (double x) {
+
+    if (x < 0) {
+        
+        return x * 0.01;    
+
+    }
+
+    return x;
+
+}
+
+
+double FUNÇÃO_NORMALIZAÇÃO_DADOS_MIN_MAX_SCALING (double x) {
+
+    return (x - 0) / 1 - 0;
+
+}
 
 void RESET_JOGO (struct TUBOS colunas []) {
 
@@ -364,7 +400,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
                
         for (int j = 0; j < 5; j++) {
             
-            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_SIGMOID (x -> NEURÓNIO_HIDDEN_LAYER[j]);
+            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_ReLU (x -> NEURÓNIO_HIDDEN_LAYER[j]);
         
             }
         
@@ -377,7 +413,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
 
         x -> OUTPUT += x -> GENES[NÚMERO_GENES - 1];
 
-        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_ReLU(x -> OUTPUT);
+        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_SIGMOID(x -> OUTPUT);
 
         return x -> OUTPUT;
     
@@ -564,7 +600,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
                        &x[i]);
 
         
-        if (output > 0.0) {
+        if (output > 0.5) {
             x[i].VELOCIDADE_Y = -8.8f;
         }
         
