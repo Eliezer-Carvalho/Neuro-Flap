@@ -14,17 +14,15 @@
 #define POPULAÇÃO 250 
 #define NUM_ELITES 25 
 #define TAXA_DE_MUTAÇÃO 0.05 
-#define NÚMERO_TUBOS 75
-#define NÚMERO_GENES 71
-#define NÚMERO_NEURÓNIOS_CAMADA_OCULTA 10
+#define NÚMERO_TUBOS 50
+#define NÚMERO_GENES 31
+#define NÚMERO_NEURÓNIOS_CAMADA_OCULTA 5
 
 bool COLISÃO_CIMA = false;
 bool COLISÃO_BAIXO = false;
 bool NEXT_POPULATION = false;
-bool GAME_OVER = false;
 
-
-int TUBO_GAP = 180; //INPUT 1
+int TUBO_GAP = 180; 
 int MORTES = 0;
 int GERAÇÃO = 0;
 
@@ -54,16 +52,16 @@ typedef struct {
 
     
     double POS_INICIAL_X; 
-    double POS_INICIAL_Y;
-    double VELOCIDADE_Y;
+    double POS_INICIAL_Y; //Input 2 - Representa a altura a que o Flappy encontra-se
+    double VELOCIDADE_Y; //Input 1 - Representa a velocidade do Flappy no eixo dos Y
 
 
     double NEURÓNIO_HIDDEN_LAYER [NÚMERO_NEURÓNIOS_CAMADA_OCULTA];
     double OUTPUT_NEURÓNIO_HIDDEN_LAYER [NÚMERO_NEURÓNIOS_CAMADA_OCULTA];
     double OUTPUT;
 
-    float CENTRO_COORDENADA_PIPE;     
-    int X_TO_NEXTPIPE;
+    float CENTRO_COORDENADA_PIPE; //Input 4 - Representa o a coordenada do centro do próximo pipe, uma maneira diferente, em vez de dar o gap entre tubos     
+    int X_TO_NEXTPIPE; //Input 3 - Representa a distância até ao próximo pipe, pipe a pipe
 
 
 } PESSOA;
@@ -78,19 +76,15 @@ int COMPARAÇÃO (const void *a, const void *b);
 
 double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x);
 double FUNÇÃO_ATIVAÇÃO_ReLU (double x);
-double FUNÇÃO_ATIVAÇÃO_TANH (double x);
-double FUNÇÃO_ATIVAÇÃO_LEAKY_ReLU (double x);
-
-double FUNÇÃO_NORMALIZAÇÃO_DADOS_MIN_MAX_SCALING (double x);
 
 
 void RESET_JOGO (struct TUBOS colunas []);
 
 void GERAÇÃO_0 (PESSOA x []);
 
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, double INPUT5, PESSOA *x);
+double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x);
 
-void NEXT_GERAÇÕES (PESSOA x [], int ELITES);
+void NEXT_GERAÇÕES (PESSOA x [], int ELITES, FILE *z);
 void FILHOS_NEXT_GERAÇÕES (PESSOA *PAI1, PESSOA *PAI2, PESSOA *FILHO, int NÚMERO_DE_GENES);
 
 void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy);
@@ -133,11 +127,9 @@ int main () {
     
     GERAÇÃO_0 (x);
 
-
     FILE* LOGS;
-
-    LOGS = fopen ("4INPUTSNORMALIZADOS_5NEURÓNIOS_SIGMOID_RELU.txt", "w");
-         
+    LOGS = fopen ("5NEURÓNIOS_ReLU_Sigmoid_NO_2.txt", "w");
+        
 
     while (!WindowShouldClose()) {
 
@@ -150,25 +142,19 @@ int main () {
              colunas[i].POS_EIXO_X -= 3.0;
 		}	
 
- 
 
 
         if (MORTES >= POPULAÇÃO) {
 
 			NEXT_POPULATION = true;
-
-            fprintf (LOGS, "\n GERAÇÃO %i \n -----------------------------------------------------", GERAÇÃO);
-                              
-            for (int i = 0; i < POPULAÇÃO; i++) {
-            
-               fprintf(LOGS, "Fitness Indivíduo %i = %lf \n", i, x[i].STORED_FITNESS);   
-                
-            }
+            GERAÇÃO ++;
         }
 
 
-        if (GAME_OVER == true) {
-
+        if (GERAÇÃO == 51) {
+            
+            double time = GetTime();
+            fprintf (LOGS, "Tempo de Epoch = %lf", time);
             UnloadTexture(Flappy);
 		    CloseWindow();
             fclose(LOGS);
@@ -179,9 +165,8 @@ int main () {
 		if (NEXT_POPULATION == true) {
             
              
-			NEXT_GERAÇÕES (x, NUM_ELITES);          
+			NEXT_GERAÇÕES (x, NUM_ELITES, LOGS);          
             RESET_JOGO (colunas);
-			GERAÇÃO ++;
             MORTES = 0;
 			NEXT_POPULATION = false;
             
@@ -294,31 +279,7 @@ double FUNÇÃO_ATIVAÇÃO_ReLU (double x) {
 }
 
 
-double FUNÇÃO_ATIVAÇÃO_TANH (double x) {
 
-    return tanh (x);
-
-}
-
-
-double FUNÇÃO_ATIVAÇÃO_LEAKY_ReLU (double x) {
-
-    if (x < 0) {
-        
-        return x * 0.01;    
-
-    }
-
-    return x;
-
-}
-
-
-double FUNÇÃO_NORMALIZAÇÃO_DADOS_MIN_MAX_SCALING (double x) {
-
-    return (x - 0) / 1 - 0;
-
-}
 
 void RESET_JOGO (struct TUBOS colunas []) {
 
@@ -360,7 +321,7 @@ void GERAÇÃO_0 (PESSOA x []) {
             x[i].VIVO = true;
 
             x[i].POS_INICIAL_X = 150;
-            x[i].POS_INICIAL_Y = 40 + ((double)rand() / RAND_MAX) * (ALTURA - 40);
+            x[i].POS_INICIAL_Y = 150 + ((double)rand() / RAND_MAX) * (ALTURA - 150);
             x[i].VELOCIDADE_Y = 0.5;
 
 
@@ -371,17 +332,16 @@ void GERAÇÃO_0 (PESSOA x []) {
 
 
 
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, double INPUT5, PESSOA *x ) {
+double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x ) {
 
     int index = 0;
         
-        for (int k = 0; k < 10; k++) {
+        for (int k = 0; k < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; k++) {
            
             x -> NEURÓNIO_HIDDEN_LAYER[k] = INPUT1 * x -> GENES[index++] +
                                      INPUT2 * x -> GENES[index++] +
                                      INPUT3 * x -> GENES[index++] +
-                                     INPUT4 * x -> GENES[index++] +
-                                     INPUT5 * x -> GENES[index++];
+                                     INPUT4 * x -> GENES[index++];
                                                 
                                      
             x -> NEURÓNIO_HIDDEN_LAYER[k] += x -> GENES[index++];
@@ -389,7 +349,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
             }
 
                
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; j++) {
             
             x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_ReLU (x -> NEURÓNIO_HIDDEN_LAYER[j]);
         
@@ -397,7 +357,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
         
 
         x -> OUTPUT = 0;
-        for (int z = 0; z < 10; z++) {
+        for (int z = 0; z < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; z++) {
 
             x -> OUTPUT += x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[z] * x -> GENES[index++];
         }
@@ -413,10 +373,29 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
 
 
 
-void NEXT_GERAÇÕES (PESSOA x [], int ELITES) {
+void NEXT_GERAÇÕES (PESSOA x [], int ELITES, FILE *z) {
 
     qsort (x, POPULAÇÃO, sizeof(PESSOA), COMPARAÇÃO);
   
+    fprintf (z, "\n\nGeração %i\n\n", GERAÇÃO);    
+
+    for (int i = 0; i < POPULAÇÃO; i++) {
+
+        fprintf (z, "Fitness Indivíduo %i -> %lf\n", i, x[i].STORED_FITNESS);        
+    }
+    
+    for (int i = 0; i < NUM_ELITES - 15; i++) {
+        
+        fprintf (z, "\nIndivíduo %i\n", i);
+            
+        for (int j = 0; j < NÚMERO_GENES; j++) {
+        
+            fprintf (z, "%lf | ", x[i].GENES[j]);
+            
+
+        }
+    }
+
 
     PESSOA NEW_GEN [POPULAÇÃO];
     
@@ -447,7 +426,7 @@ void NEXT_GERAÇÕES (PESSOA x [], int ELITES) {
         x[i].VIVO = true;
 
         x[i].POS_INICIAL_X = 150;
-        x[i].POS_INICIAL_Y = 40 + ((double)rand() / RAND_MAX) * (ALTURA - 40);
+        x[i].POS_INICIAL_Y = 150 + ((double)rand() / RAND_MAX) * (ALTURA - 150);
         x[i].VELOCIDADE_Y = 0.5;
 
 
@@ -548,11 +527,11 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
 
 
 
-            x[i].CENTRO_COORDENADA_PIPE = colunas[j].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0);
+            x[i].CENTRO_COORDENADA_PIPE = colunas[j].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0); //INICIO
         } 
 
 
-       if (NEXTPIPE != -1) {
+       if (NEXTPIPE != -1) { //À MEDIDA QUE PASSA OS PIPES
 
             x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 85) - x[i].POS_INICIAL_X;
 
@@ -560,7 +539,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
         }
 
 
-        if (x[i].POS_INICIAL_Y > (ALTURA - 40) || x[i].POS_INICIAL_Y <= 0) {
+        if (x[i].POS_INICIAL_Y > (ALTURA - 45) || x[i].POS_INICIAL_Y <= 0) {
 
             x[i].VIVO = false;
            
@@ -576,10 +555,9 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
         if (NEXTPIPE == -1 && x[i].VIVO == true) {
 
                 x[i].VIVO = false;
-                x[i].STORED_FITNESS = x[i].FITNESS + 500000; // bónus de vitória
+                x[i].STORED_FITNESS = x[i].FITNESS + 2000; // bónus de vitória
                 MORTES += 1;
-                GAME_OVER = true;
-
+               
         }
 
 
@@ -587,8 +565,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
         double output = MULTILAYER_PERCEPTRON ((double) x[i].POS_INICIAL_Y / (double) ALTURA,
                        (double) x[i].X_TO_NEXTPIPE / (double) LARGURA,
                        (double) x[i].VELOCIDADE_Y / (double) 10.0,
-                       ((double) x[i].CENTRO_COORDENADA_PIPE - (double) x[i].POS_INICIAL_Y) / (double) ALTURA,
-                        (double) TUBO_GAP / (double) ALTURA,
+                       ((double) x[i].CENTRO_COORDENADA_PIPE - (double) x[i].POS_INICIAL_Y) / (double) ALTURA, 
                        &x[i]);
 
         

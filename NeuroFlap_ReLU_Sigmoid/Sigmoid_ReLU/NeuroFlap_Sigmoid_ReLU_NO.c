@@ -14,7 +14,7 @@
 #define POPULAÇÃO 250 
 #define NUM_ELITES 25 
 #define TAXA_DE_MUTAÇÃO 0.05 
-#define NÚMERO_TUBOS 75
+#define NÚMERO_TUBOS 50
 #define NÚMERO_GENES 31
 #define NÚMERO_NEURÓNIOS_CAMADA_OCULTA 5
 
@@ -76,10 +76,6 @@ int COMPARAÇÃO (const void *a, const void *b);
 
 double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x);
 double FUNÇÃO_ATIVAÇÃO_ReLU (double x);
-double FUNÇÃO_ATIVAÇÃO_TANH (double x);
-double FUNÇÃO_ATIVAÇÃO_LEAKY_ReLU (double x);
-
-//double FUNÇÃO_NORMALIZAÇÃO_DADOS_MIN_MAX_SCALING (double x);
 
 
 void RESET_JOGO (struct TUBOS colunas []);
@@ -88,7 +84,7 @@ void GERAÇÃO_0 (PESSOA x []);
 
 double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x);
 
-void NEXT_GERAÇÕES (PESSOA x [], int ELITES);
+void NEXT_GERAÇÕES (PESSOA x [], int ELITES, FILE *z);
 void FILHOS_NEXT_GERAÇÕES (PESSOA *PAI1, PESSOA *PAI2, PESSOA *FILHO, int NÚMERO_DE_GENES);
 
 void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy);
@@ -131,11 +127,9 @@ int main () {
     
     GERAÇÃO_0 (x);
 
-
     FILE* LOGS;
-
-    LOGS = fopen ("5NEURÓNIOS_SIGMOID_RELU.txt", "w");
-         
+    LOGS = fopen ("5NEURÓNIOS_Sigmoid_ReLU_NO_1.txt", "w");
+        
 
     while (!WindowShouldClose()) {
 
@@ -148,27 +142,19 @@ int main () {
              colunas[i].POS_EIXO_X -= 3.0;
 		}	
 
- 
 
 
         if (MORTES >= POPULAÇÃO) {
 
 			NEXT_POPULATION = true;
             GERAÇÃO ++;
-
-            fprintf (LOGS, "\n GERAÇÃO %i \n ----------------------------------------------------- \n", GERAÇÃO);
-            
-            
-            for (int i = 0; i < POPULAÇÃO; i++) {
-            
-               fprintf(LOGS, "Fitness Indivíduo %i = %lf \n", i, x[i].STORED_FITNESS);   
-                
-            }
         }
 
 
-        if (GERAÇÃO == 100) {
-
+        if (GERAÇÃO == 51) {
+            
+            double time = GetTime();
+            fprintf (LOGS, "Tempo de Epoch = %lf", time);
             UnloadTexture(Flappy);
 		    CloseWindow();
             fclose(LOGS);
@@ -179,7 +165,7 @@ int main () {
 		if (NEXT_POPULATION == true) {
             
              
-			NEXT_GERAÇÕES (x, NUM_ELITES);          
+			NEXT_GERAÇÕES (x, NUM_ELITES, LOGS);          
             RESET_JOGO (colunas);
             MORTES = 0;
 			NEXT_POPULATION = false;
@@ -293,31 +279,7 @@ double FUNÇÃO_ATIVAÇÃO_ReLU (double x) {
 }
 
 
-double FUNÇÃO_ATIVAÇÃO_TANH (double x) {
 
-    return tanh (x);
-
-}
-
-
-double FUNÇÃO_ATIVAÇÃO_LEAKY_ReLU (double x) {
-
-    if (x < 0) {
-        
-        return x * 0.01;    
-
-    }
-
-    return x;
-
-}
-
-
-double FUNÇÃO_NORMALIZAÇÃO_DADOS_MIN_MAX_SCALING (double x) {
-
-    return (x - 0) / 1 - 0;
-
-}
 
 void RESET_JOGO (struct TUBOS colunas []) {
 
@@ -389,7 +351,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
                
         for (int j = 0; j < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; j++) {
             
-            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_ReLU (x -> NEURÓNIO_HIDDEN_LAYER[j]);
+            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_SIGMOID (x -> NEURÓNIO_HIDDEN_LAYER[j]);
         
             }
         
@@ -402,7 +364,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
 
         x -> OUTPUT += x -> GENES[NÚMERO_GENES - 1];
 
-        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_SIGMOID(x -> OUTPUT);
+        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_ReLU(x -> OUTPUT);
 
         return x -> OUTPUT;
     
@@ -411,10 +373,29 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
 
 
 
-void NEXT_GERAÇÕES (PESSOA x [], int ELITES) {
+void NEXT_GERAÇÕES (PESSOA x [], int ELITES, FILE *z) {
 
     qsort (x, POPULAÇÃO, sizeof(PESSOA), COMPARAÇÃO);
   
+    fprintf (z, "\n\nGeração %i\n\n", GERAÇÃO);    
+
+    for (int i = 0; i < POPULAÇÃO; i++) {
+
+        fprintf (z, "Fitness Indivíduo %i -> %lf\n", i, x[i].STORED_FITNESS);        
+    }
+    
+    for (int i = 0; i < NUM_ELITES - 15; i++) {
+        
+        fprintf (z, "\nIndivíduo %i\n", i);
+            
+        for (int j = 0; j < NÚMERO_GENES; j++) {
+        
+            fprintf (z, "%lf | ", x[i].GENES[j]);
+            
+
+        }
+    }
+
 
     PESSOA NEW_GEN [POPULAÇÃO];
     
@@ -574,7 +555,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
         if (NEXTPIPE == -1 && x[i].VIVO == true) {
 
                 x[i].VIVO = false;
-                x[i].STORED_FITNESS = x[i].FITNESS + 500000; // bónus de vitória
+                x[i].STORED_FITNESS = x[i].FITNESS + 2000; // bónus de vitória
                 MORTES += 1;
                
         }
@@ -588,7 +569,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
                        &x[i]);
 
         
-        if (output > 0.5) {
+        if (output > 0) {
             x[i].VELOCIDADE_Y = -8.8f;
         }
         
