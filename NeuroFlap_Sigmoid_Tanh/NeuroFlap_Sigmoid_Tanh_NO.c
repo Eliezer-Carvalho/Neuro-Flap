@@ -74,8 +74,8 @@ typedef struct {
 int COMPARAÇÃO (const void *a, const void *b);
 
 
+double FUNÇÃO_ATIVAÇÃO_TANH (double x);
 double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x);
-double FUNÇÃO_ATIVAÇÃO_ReLU (double x);
 
 
 void RESET_JOGO (struct TUBOS colunas []);
@@ -128,7 +128,7 @@ int main () {
     GERAÇÃO_0 (x);
 
     FILE* LOGS;
-    LOGS = fopen ("5NEURÓNIOS_Sigmoid_ReLU_NO_1.txt", "w");
+    LOGS = fopen ("5NEURÓNIOS_Sigmoid_Tanh_NO.txt", "w");
         
 
     while (!WindowShouldClose()) {
@@ -261,21 +261,17 @@ int COMPARAÇÃO (const void *a, const void *b) {
 
 
 
-double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x) {
+double FUNÇÃO_ATIVAÇÃO_TANH (double x) {
 
-    return 1.0 / (1.0 + exp(-x));
+    return tanh(x);
 }
 
 
 
-double FUNÇÃO_ATIVAÇÃO_ReLU (double x) {
+double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x) {
 
-    if (x < 0) {
+    return 1.0 / (1.0 + exp(-x));
 
-        return 0;                
-    }
-
-    return x;
 }
 
 
@@ -364,7 +360,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
 
         x -> OUTPUT += x -> GENES[NÚMERO_GENES - 1];
 
-        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_ReLU(x -> OUTPUT);
+        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_TANH(x -> OUTPUT);
 
         return x -> OUTPUT;
     
