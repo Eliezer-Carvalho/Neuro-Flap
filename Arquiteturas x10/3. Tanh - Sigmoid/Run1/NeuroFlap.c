@@ -128,7 +128,7 @@ int main () {
     GERAÇÃO_0 (x);
 
     FILE* LOGS;
-    LOGS = fopen ("LOG_Tanh_Sigmoid_10.txt", "w");
+    LOGS = fopen ("LOG_Tanh_Sigmoid_Run1_10.txt", "w");
         
 
     while (!WindowShouldClose()) {

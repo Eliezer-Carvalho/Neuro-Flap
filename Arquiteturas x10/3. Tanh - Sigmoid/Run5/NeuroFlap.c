@@ -75,7 +75,7 @@ int COMPARAÇÃO (const void *a, const void *b);
 
 
 double FUNÇÃO_ATIVAÇÃO_TANH (double x);
-double FUNÇÃO_ATIVAÇÃO_LEAKYReLU (double x);
+double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x);
 
 
 void RESET_JOGO (struct TUBOS colunas []);
@@ -128,8 +128,8 @@ int main () {
     GERAÇÃO_0 (x);
 
     FILE* LOGS;
-    
-    LOGS = fopen ("LOG_LeakyReLU_Tanh_Run2_10x.txt", "w");
+    LOGS = fopen ("LOG_Tanh_Sigmoid_Run5_10.txt", "w");
+        
 
     while (!WindowShouldClose()) {
 
@@ -268,14 +268,10 @@ double FUNÇÃO_ATIVAÇÃO_TANH (double x) {
 
 
 
-double FUNÇÃO_ATIVAÇÃO_LEAKYReLU (double x) {
+double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x) {
 
-    if (x < 0) {
+    return 1.0 / (1.0 + exp(-x));
 
-        return x * 0.01;                
-    }
-
-    return x;
 }
 
 
@@ -351,7 +347,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
                
         for (int j = 0; j < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; j++) {
             
-            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_LEAKYReLU (x -> NEURÓNIO_HIDDEN_LAYER[j]);
+            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_TANH (x -> NEURÓNIO_HIDDEN_LAYER[j]);
         
             }
         
@@ -364,7 +360,7 @@ double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, doubl
 
         x -> OUTPUT += x -> GENES[NÚMERO_GENES - 1];
 
-        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_TANH(x -> OUTPUT);
+        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_SIGMOID(x -> OUTPUT);
 
         return x -> OUTPUT;
     
@@ -569,7 +565,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
                        &x[i]);
 
         
-        if (output > 0) {
+        if (output > 0.5) {
             x[i].VELOCIDADE_Y = -8.8f;
         }
         
