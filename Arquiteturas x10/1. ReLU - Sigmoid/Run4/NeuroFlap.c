@@ -128,7 +128,7 @@ int main () {
     GERAÇÃO_0 (x);
 
     FILE* LOGS;
-    LOGS = fopen ("5NEURÓNIOS_ReLU_Sigmoid_NO_2.txt", "w");
+    LOGS = fopen ("LOG_ReLU_Sigmoid_Run4_10x.txt", "w");
         
 
     while (!WindowShouldClose()) {
