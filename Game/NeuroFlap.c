@@ -80,11 +80,12 @@ double ACTIVATION_FUNCTION_TANH (double x);
 double ACTIVATION_FUNCTION_SIGMOID (double x);
 
 void INICIAR_VALORES (REDE_NEURAL *x, UTILIZADOR *z);
+void RESTART (REDE_NEURAL *x, UTILIZADOR *z, TUBOS y []);
 
 double REDE_NEURAL_AG (double INPUT1, double INPUT2, double INPUT3, double INPUT4, REDE_NEURAL *x);
 
-void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy);
-void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy);
+void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy_AI);
+void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy_UTI);
 
 
 
@@ -94,7 +95,9 @@ int main () {
 
     InitWindow (LARGURA, ALTURA, "Neuro Flap");
     SetTargetFPS (FPS);
-    Texture2D Flappy = LoadTexture("/home/eliezer/Neuro Flap/Imagens/flappybird2.png");    
+    Texture2D Flappy_UTI = LoadTexture("/home/eliezer/Neuro Flap/Imagens/flappybird2.png");
+    Texture2D Flappy_AI = LoadTexture ("/home/eliezer/Neuro Flap/Imagens/flappybird1.png");
+
 
     TUBOS colunas [NÚMERO_TUBOS];
     for (int i = 0; i < NÚMERO_TUBOS; i++) {
@@ -123,10 +126,10 @@ int main () {
             
             if (GAME_MODE_AI == true) {
 
-                RUN_REDE_NEURAL (&multilayer_perceptron_ag, colunas, Flappy);
+                RUN_REDE_NEURAL (&multilayer_perceptron_ag, colunas, Flappy_AI);
             }
 
-            RUN_PLAYER1 (&player_1, colunas, Flappy);
+            RUN_PLAYER1 (&player_1, colunas, Flappy_UTI);
 
             if (WINNER == true) {
 
@@ -147,21 +150,27 @@ int main () {
 
             ClearBackground(SKYBLUE);
 
-            DrawTextureEx(Flappy, (Vector2){multilayer_perceptron_ag.POS_INICIAL_X, multilayer_perceptron_ag.POS_INICIAL_Y}, 0, 0.45, RAYWHITE);
-            DrawTextureEx(Flappy, (Vector2){player_1.POS_INICIAL_X_UTI, player_1.POS_INICIAL_Y_UTI}, 0, 0.45, LIGHTGRAY);
+            DrawTextureEx(Flappy_AI, (Vector2){multilayer_perceptron_ag.POS_INICIAL_X, multilayer_perceptron_ag.POS_INICIAL_Y}, 0, 0.45, RAYWHITE);
+            DrawTextureEx(Flappy_UTI, (Vector2){player_1.POS_INICIAL_X_UTI, player_1.POS_INICIAL_Y_UTI}, 0, 0.45, RAYWHITE);
 
-            //DrawText(TextFormat("%i", NEXTPIPE2), LARGURA / 2, 100, 30, BLACK);
-        
             for (int i = 0; i < NÚMERO_TUBOS; i++) {
                 
                 DrawRectangle (colunas[i].POS_EIXO_X, 0, 95, colunas[i].ALTURA_TUBO_CIMA, RAYWHITE);
 			    DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 95, colunas[i].ALTURA_TUBO_BAIXO, RAYWHITE);
             }
-        
+
+            DrawText(TextFormat("%i", SCORE), LARGURA / 2.13, 40, 50, BLACK);
+            
+            if (GAME_MODE == false) {
+                
+                RESTART (&multilayer_perceptron_ag, &player_1, colunas);
+            }
+
         EndDrawing();
     }
 
-    UnloadTexture(Flappy);
+    UnloadTexture(Flappy_AI);
+    UnloadTexture(Flappy_UTI);
     CloseWindow();
 
     return 0;
@@ -199,6 +208,37 @@ void INICIAR_VALORES(REDE_NEURAL *x, UTILIZADOR *z) {
     z -> POS_INICIAL_Y_UTI = 150;
     z -> VELOCIDADE_Y_UTI = 0;
 
+}
+
+
+
+void RESTART (REDE_NEURAL *x, UTILIZADOR *z, TUBOS y []) {
+            
+    DrawRectangle (LARGURA / 6.8, ALTURA / 4, 600, 200, WHITE);
+    DrawText(TextFormat("Game Over!"), LARGURA / 3.3, ALTURA / 3.35, 60, DARKBLUE);
+    DrawText(TextFormat("Pressione R para voltar a jogar"), LARGURA / 4.8, ALTURA / 2.2, 30, DARKBLUE);
+
+    if (IsKeyPressed(KEY_R)) {
+
+        INICIAR_VALORES(x, z);
+
+        POS_INICIAL_X_PRIMEIRO_PIPE = 800;
+
+        for (int i = 0; i < NÚMERO_TUBOS; i++) {
+            
+            int ALTURA_MAX_TUBO_CIMA_2 = ALTURA - TUBO_GAP - 50;
+            int ALTURA_TUBO_CIMA_2 = rand() % (ALTURA_MAX_TUBO_CIMA_2 - 50) + 50;
+            int ALTURA_TUBO_BAIXO_2 = ALTURA - ALTURA_TUBO_CIMA_2 - TUBO_GAP;
+
+            y[i].POS_EIXO_X = POS_INICIAL_X_PRIMEIRO_PIPE;
+            y[i].ALTURA_TUBO_CIMA = ALTURA_TUBO_CIMA_2;
+            y[i].ALTURA_TUBO_BAIXO = ALTURA_TUBO_BAIXO_2;
+
+            POS_INICIAL_X_PRIMEIRO_PIPE += 320;
+        }
+    
+        GAME_MODE = true;    
+    }
 }
 
 
@@ -242,7 +282,7 @@ double REDE_NEURAL_AG (double INPUT1, double INPUT2, double INPUT3, double INPUT
 }
 
 
-void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy) { //Structs são passadas por valor (cópia), arrays são passados como ponteiros automaticamente.
+void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy_AI) { //Structs são passadas por valor (cópia), arrays são passados como ponteiros automaticamente.
 
     
     int NEXTPIPE = -1;
@@ -251,8 +291,8 @@ void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy) { //Structs 
     x -> POS_INICIAL_Y += x -> VELOCIDADE_Y;
 
     Vector2 FLAPPYHITBOX = {
-                            x -> POS_INICIAL_X + (Flappy.width * 0.45 / 2 + 10),
-                            x -> POS_INICIAL_Y + (Flappy.height * 0.45 / 2)                                               
+                            x -> POS_INICIAL_X + (Flappy_AI.width * 0.45 / 2 + 10),
+                            x -> POS_INICIAL_Y + (Flappy_AI.height * 0.45 / 2)                                               
     };
 
 
@@ -315,7 +355,7 @@ void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy) { //Structs 
 
 
 
-void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy) {
+void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy_UTI) {
 
     int NEXTPIPE2 = -1;
    
@@ -330,8 +370,8 @@ void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy) {
 			
 
     Vector2 FLAPPYHITBOX_UTI = {
-                            z -> POS_INICIAL_X_UTI + (Flappy.width * 0.45 / 2 + 10),
-                            z -> POS_INICIAL_Y_UTI + (Flappy.height * 0.45 / 2)                                               
+                            z -> POS_INICIAL_X_UTI + (Flappy_UTI.width * 0.45 / 2 + 10),
+                            z -> POS_INICIAL_Y_UTI + (Flappy_UTI.height * 0.45 / 2)                                               
     };
 
 
@@ -347,7 +387,7 @@ void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy) {
         if (y[i].POS_EIXO_X + 95 >= z -> POS_INICIAL_X_UTI && NEXTPIPE2 == -1) {
     
             NEXTPIPE2 = i;
-            printf ("%i", NEXTPIPE2);
+            SCORE = NEXTPIPE2;
         }   
        
         if (COLISÃO_CIMA_UTILIZADOR == true || COLISÃO_BAIXO_UTILIZADOR == true) {
@@ -370,12 +410,8 @@ void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy) {
 }
 
 
-//Mudar velocidade do pipe 
-//Mudar pipes dificuldade
-//Mudar aparência
+//Os 2 flappys fica muito confuso
 //Gravar rede neural a treinar
-//Condição de vitória
-//Esquema de rede a tomar decisões ??
 //WASM Windows
 
 
