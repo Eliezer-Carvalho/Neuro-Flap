@@ -1,40 +1,52 @@
 #include "raylib.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-//--------------------------------------------------------------------------------- VARIÁVEIS ---------------------------------------------------------------------------
-
-
-#define LARGURA 1000
-#define ALTURA 550
-#define FPS 60 
-#define GRAVIDADE 0.5 
-#define NÚMERO_TUBOS 50
-
-bool COLISÃO_CIMA = false;
-bool COLISÃO_BAIXO = false;
-
-int TUBO_GAP = 180; 
+#include <stdio.h>
 
 
-//--------------------------------------------------------------------------------- STRUCTS -----------------------------------------------------------------------------
+#define LARGURA 850
+#define ALTURA 670
+#define FPS 60
+#define GRAVIDADE 0.5
+#define NÚMERO_TUBOS 200
+#define NÚMERO_NEURÓNIOS_CAMADA_OCULTA 5
 
 
-struct TUBOS {
-    
-    float POS_EIXO_X;
-    int ALTURA_TUBO_CIMA;
-    int ALTURA_TUBO_BAIXO;
-   
+
+double GENES [31] = {
+-0.358468, -0.406085, 0.918029, 0.992839, -0.464108, -0.536701, -0.858866, 0.502180, -0.909935, -0.196327, -0.482090, -0.148084, 0.086814, 0.801267, 0.327782, 0.986114, 0.841904, -0.299917, 0.477906, -0.261285, 0.046876, 0.131235, -0.855359, 0.435655, 0.458136, -0.878058, 0.152362, -1.005892, -0.623846, -0.833617, 0.046823
 };
+ 
+
+
+
+bool COLISÃO_CIMA_REDE_NEURAL = false;
+bool COLISÃO_BAIXO_REDE_NEURAL = false;
+
+bool COLISÃO_CIMA_UTILIZADOR = false;
+bool COLISÃO_BAIXO_UTILIZADOR = false;
+
+bool GAME_MODE = true;
+bool GAME_MODE_AI = true;
+bool WINNER = false;
+
+int TUBO_GAP = 180;
+int SCORE = 0;
+int POS_INICIAL_X_PRIMEIRO_PIPE = 800;
 
 
 typedef struct {
-    
-    double GENES [31] = {-0.596091, -0.923310, -0.820793, -0.368714, -0.602345, -0.039632, -0.457684, 0.295823, 0.657382, -0.281872, -0.119622, 0.426760, -0.524716, 0.544149, 0.625958, 0.016093, -0.205925, 0.677372, 0.902922, -0.471069, -0.701636, 0.944586, -0.777863, 0.119959, -0.799539, -0.642989, 0.085010, -0.901643, -0.930897, -0.200175, -0.571187};
- 
+
+    float POS_EIXO_X;
+    int ALTURA_TUBO_CIMA;
+    int ALTURA_TUBO_BAIXO;
+
+} TUBOS;
+
+
+typedef struct {
+
     bool VIVO; 
 
     double POS_INICIAL_X; 
@@ -49,24 +61,32 @@ typedef struct {
     float CENTRO_COORDENADA_PIPE; //Input 4 - Representa o a coordenada do centro do próximo pipe, uma maneira diferente, em vez de dar o gap entre tubos     
     int X_TO_NEXTPIPE; //Input 3 - Representa a distância até ao próximo pipe, pipe a pipe
 
-} PESSOA;
+} REDE_NEURAL;
+
+
+typedef struct {
+
+    bool VIVO_UTI;
+
+    double POS_INICIAL_X_UTI;
+    double POS_INICIAL_Y_UTI;
+    double VELOCIDADE_Y_UTI;
+
+} UTILIZADOR;
 
 
 
-//------------------------------------------------------------------------ FUNCTIONS -------------------------------------------------------------------------
+double ACTIVATION_FUNCTION_TANH (double x);
+double ACTIVATION_FUNCTION_SIGMOID (double x);
+
+void INICIAR_VALORES (REDE_NEURAL *x, UTILIZADOR *z);
+
+double REDE_NEURAL_AG (double INPUT1, double INPUT2, double INPUT3, double INPUT4, REDE_NEURAL *x);
+
+void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy);
+void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy);
 
 
-double FUNÇÃO_ATIVAÇÃO_TANH (double x);
-double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x);
-
-void RESET_JOGO (struct TUBOS colunas []);
-
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x);
-
-void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy);
-
-
-//------------------------------------------------------------------------ MAIN -----------------------------------------------------------------------------------------
 
 int main () {
 
@@ -74,159 +94,75 @@ int main () {
 
     InitWindow (LARGURA, ALTURA, "Neuro Flap");
     SetTargetFPS (FPS);
+    Texture2D Flappy = LoadTexture("/home/eliezer/Neuro Flap/Imagens/flappybird2.png");    
 
-    Texture2D Flappy = LoadTexture("/home/eliezer/Neuro Flap/Imagens/flappybird2.png");
-   
-    
-    struct TUBOS colunas [NÚMERO_TUBOS];
-    float POS_INICIAL_X_PRIMEIRO_PIPE = 680;
-
-
+    TUBOS colunas [NÚMERO_TUBOS];
     for (int i = 0; i < NÚMERO_TUBOS; i++) {
-	
+    
         int ALTURA_MAX_TUBO_CIMA = ALTURA - TUBO_GAP - 50;
         int ALTURA_TUBO_CIMA = rand() % (ALTURA_MAX_TUBO_CIMA - 50) + 50;
         int ALTURA_TUBO_BAIXO = ALTURA - ALTURA_TUBO_CIMA - TUBO_GAP;
 
-       
         colunas[i].POS_EIXO_X = POS_INICIAL_X_PRIMEIRO_PIPE;
         colunas[i].ALTURA_TUBO_CIMA = ALTURA_TUBO_CIMA;
         colunas[i].ALTURA_TUBO_BAIXO = ALTURA_TUBO_BAIXO;
 
-        POS_INICIAL_X_PRIMEIRO_PIPE += 280;
+        POS_INICIAL_X_PRIMEIRO_PIPE += 320;
+    }   
 
-	}
- 
-    GERAÇÃO_0 (x);
 
-    PESSOA [1];
+    REDE_NEURAL multilayer_perceptron_ag;
+    UTILIZADOR player_1;
 
-    FILE* LOGS;
-    LOGS = fopen ("LOG_Tanh_Sigmoid_Run3.txt", "w");
-        
+    INICIAR_VALORES (&multilayer_perceptron_ag, &player_1);
+
 
     while (!WindowShouldClose()) {
 
-        
-
-        MAIN_LOOP (x, colunas, Flappy);
-
-        for (int i = 0; i < NÚMERO_TUBOS; i++) {
-           
-             colunas[i].POS_EIXO_X -= 3.0;
-		}	
-
-
-
-        if (MORTES >= POPULAÇÃO) {
-
-			NEXT_POPULATION = true;
-            GERAÇÃO ++;
-        }
-
-
-        if (GERAÇÃO == 51) {
+        if (GAME_MODE == true) {
             
-            double time = GetTime();
-            fprintf (LOGS, "Tempo de Epoch = %lf", time);
-            UnloadTexture(Flappy);
-		    CloseWindow();
-            fclose(LOGS);
+            if (GAME_MODE_AI == true) {
+
+                RUN_REDE_NEURAL (&multilayer_perceptron_ag, colunas, Flappy);
+            }
+
+            RUN_PLAYER1 (&player_1, colunas, Flappy);
+
+            if (WINNER == true) {
+
+                GAME_MODE = false;
+                GAME_MODE_AI = false;
+            }
+
+
+            for (int i = 0; i < NÚMERO_TUBOS; i++) {
+
+                colunas[i].POS_EIXO_X -= 3.3f;
+            }
 
         }
+               
+  
+        BeginDrawing();
 
+            ClearBackground(SKYBLUE);
 
-		if (NEXT_POPULATION == true) {
-            
-             
-			NEXT_GERAÇÕES (x, NUM_ELITES, LOGS);          
-            RESET_JOGO (colunas);
-            MORTES = 0;
-			NEXT_POPULATION = false;
-            
-		}
+            DrawTextureEx(Flappy, (Vector2){multilayer_perceptron_ag.POS_INICIAL_X, multilayer_perceptron_ag.POS_INICIAL_Y}, 0, 0.45, RAYWHITE);
+            DrawTextureEx(Flappy, (Vector2){player_1.POS_INICIAL_X_UTI, player_1.POS_INICIAL_Y_UTI}, 0, 0.45, LIGHTGRAY);
 
-
+            //DrawText(TextFormat("%i", NEXTPIPE2), LARGURA / 2, 100, 30, BLACK);
         
-
-
-        for (int i = 0; i < POPULAÇÃO; i++) {
-
-            if (x[i].VIVO == false) {
-                   
-                //x[i].POS_INICIAL_Y += 10.0f;
-                x[i].POS_INICIAL_X -= 3.0f;
-            }    
-        }
-
-
+            for (int i = 0; i < NÚMERO_TUBOS; i++) {
+                
+                DrawRectangle (colunas[i].POS_EIXO_X, 0, 95, colunas[i].ALTURA_TUBO_CIMA, RAYWHITE);
+			    DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 95, colunas[i].ALTURA_TUBO_BAIXO, RAYWHITE);
+            }
         
+        EndDrawing();
+    }
 
-
-
-		BeginDrawing();
-		ClearBackground(DARKBLUE);
-
-
-
-        for (int i = 0; i < POPULAÇÃO; i++) {
-		    
-            DrawTextureEx(Flappy, (Vector2){x[i].POS_INICIAL_X, x[i].POS_INICIAL_Y}, 0, 0.45, RAYWHITE); 
-           // Debug DrawCircle (x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2 + 10),
-            //           x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2), 20, BLACK);
-
-        }
-
-/*
-        DrawText(TextFormat("Input 1 = %lf", (double) x[40].POS_INICIAL_Y / (double) ALTURA), 30, 110, 25, BLACK);
-        DrawText(TextFormat("Input 2 = %lf", (double) x[40].X_TO_NEXTPIPE / (double) LARGURA), 30, 140, 25, BLACK);
-        DrawText(TextFormat("Input 3 = %lf", (double) x[40].VELOCIDADE_Y / (double) 10.0), 30, 170, 25, BLACK);
-
-        double minus = (double) x[40].CENTRO_COORDENADA_PIPE - (double) x[40].POS_INICIAL_Y;
-        DrawText(TextFormat("Input 4 = %lf", minus / (double) ALTURA), 30, 200, 25, BLACK);
-
-        DEBUG
-*/		
-
-		for (int i = 0; i < NÚMERO_TUBOS; i++) {
-			
-			DrawRectangle (colunas[i].POS_EIXO_X, 0, 85, colunas[i].ALTURA_TUBO_CIMA, WHITE);
-			DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 85, colunas[i].ALTURA_TUBO_BAIXO, WHITE);
-
-            
-        }
-
-
-        
-
-		DrawText(TextFormat("População %i", GERAÇÃO), 30, 50, 25, BLACK);		
-		DrawText(TextFormat("Indivíduos Restantes = %i", POPULAÇÃO - MORTES), 30, 80, 25, BLACK);
-        
-
-       
-     
-
-
-		EndDrawing();
-	}
-
-		UnloadTexture(Flappy);
-		CloseWindow();
-        fclose(LOGS);
-
-}
-
-
-
-int COMPARAÇÃO (const void *a, const void *b) {
-
-    PESSOA *ind1 = (PESSOA *)a;
-   	PESSOA *ind2 = (PESSOA *)b;
-
-    
-    if (ind1 -> STORED_FITNESS < ind2 -> STORED_FITNESS) return 1;
-    if (ind1 -> STORED_FITNESS > ind2 -> STORED_FITNESS) return -1;
-    
+    UnloadTexture(Flappy);
+    CloseWindow();
 
     return 0;
 
@@ -234,319 +170,218 @@ int COMPARAÇÃO (const void *a, const void *b) {
 
 
 
+double ACTIVATION_FUNCTION_TANH (double x) {
 
-double FUNÇÃO_ATIVAÇÃO_TANH (double x) {
+    return tanh (x);
 
-    return tanh(x);
 }
 
 
-
-double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x) {
+double ACTIVATION_FUNCTION_SIGMOID (double x) {
 
     return 1.0 / (1.0 + exp(-x));
 
 }
 
 
-
-
-void RESET_JOGO (struct TUBOS colunas []) {
-
-
-    float POS_INICIAL_X_PRIMEIRO_PIPE_2 = 680;
-
-    for (int i = 0; i < NÚMERO_TUBOS; i++) {
-	
-        int ALTURA_MAX_TUBO_CIMA = ALTURA - TUBO_GAP - 50;
-        int ALTURA_TUBO_CIMA = rand() % (ALTURA_MAX_TUBO_CIMA - 50) + 50;
-        int ALTURA_TUBO_BAIXO = ALTURA - ALTURA_TUBO_CIMA - TUBO_GAP;
-
-       
-        colunas[i].POS_EIXO_X = POS_INICIAL_X_PRIMEIRO_PIPE_2;
-        colunas[i].ALTURA_TUBO_CIMA = ALTURA_TUBO_CIMA;
-        colunas[i].ALTURA_TUBO_BAIXO = ALTURA_TUBO_BAIXO;
-
-        POS_INICIAL_X_PRIMEIRO_PIPE_2 += 280;
-
-	}
-
-}
-
-
-void GERAÇÃO_0 (PESSOA x []) {
-
-
-    for (int i = 0; i < POPULAÇÃO; i++) {
-        for (int j = 0; j < NÚMERO_GENES; j++) {
-
-            x[i].GENES[j] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
-        }
-            x[i].GENES[NÚMERO_GENES - 1] = ((double)rand() / RAND_MAX) * 2.0 - 1.0;
+void INICIAR_VALORES(REDE_NEURAL *x, UTILIZADOR *z) {
     
-            
-            
-            x[i].FITNESS = 0;
-            x[i].STORED_FITNESS = 0;
-            x[i].VIVO = true;
+    x -> VIVO = true;
+    x -> POS_INICIAL_X = 200;
+    x -> POS_INICIAL_Y = 200;
+    x -> VELOCIDADE_Y = 0;
+    x -> CENTRO_COORDENADA_PIPE = 0;
+    x -> X_TO_NEXTPIPE = 0;
+  
+    
+    z -> VIVO_UTI = true;
+    z -> POS_INICIAL_X_UTI = 200;
+    z -> POS_INICIAL_Y_UTI = 150;
+    z -> VELOCIDADE_Y_UTI = 0;
 
-            x[i].POS_INICIAL_X = 150;
-            x[i].POS_INICIAL_Y = 150 + ((double)rand() / RAND_MAX) * (ALTURA - 150);
-            x[i].VELOCIDADE_Y = 0.5;
-
-
-            
-    }
 }
 
 
 
-
-double MULTILAYER_PERCEPTRON (double INPUT1, double INPUT2, double INPUT3, double INPUT4, PESSOA *x ) {
+double REDE_NEURAL_AG (double INPUT1, double INPUT2, double INPUT3, double INPUT4, REDE_NEURAL *x) {
 
     int index = 0;
+
+    for (int a = 0; a < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; a++) {
+
+        x -> NEURÓNIO_HIDDEN_LAYER [a] = INPUT1 * GENES [index++] +
+                                         INPUT2 * GENES [index++] +
+                                         INPUT3 * GENES [index++] +
+                                         INPUT4 * GENES [index++];
         
-        for (int k = 0; k < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; k++) {
-           
-            x -> NEURÓNIO_HIDDEN_LAYER[k] = INPUT1 * x -> GENES[index++] +
-                                     INPUT2 * x -> GENES[index++] +
-                                     INPUT3 * x -> GENES[index++] +
-                                     INPUT4 * x -> GENES[index++];
-                                                
-                                     
-            x -> NEURÓNIO_HIDDEN_LAYER[k] += x -> GENES[index++];
-                        
-            }
-
-               
-        for (int j = 0; j < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; j++) {
-            
-            x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[j] = FUNÇÃO_ATIVAÇÃO_TANH (x -> NEURÓNIO_HIDDEN_LAYER[j]);
-        
-            }
-        
-
-        x -> OUTPUT = 0;
-        for (int z = 0; z < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; z++) {
-
-            x -> OUTPUT += x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER[z] * x -> GENES[index++];
-        }
-
-        x -> OUTPUT += x -> GENES[NÚMERO_GENES - 1];
-
-        x -> OUTPUT = FUNÇÃO_ATIVAÇÃO_SIGMOID(x -> OUTPUT);
-
-        return x -> OUTPUT;
-    
-}
+        x -> NEURÓNIO_HIDDEN_LAYER [a] += GENES [index++];
+    }
 
 
+    for (int b = 0; b < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; b++) {
 
+        x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER [b] = ACTIVATION_FUNCTION_TANH (x -> NEURÓNIO_HIDDEN_LAYER [b]);
 
-void NEXT_GERAÇÕES (PESSOA x [], int ELITES, FILE *z) {
-
-    qsort (x, POPULAÇÃO, sizeof(PESSOA), COMPARAÇÃO);
+    }
   
-    fprintf (z, "\n\nGeração %i\n\n", GERAÇÃO);    
+    x -> OUTPUT = 0; //Muito importante ser reiniciado porque se não for, vai estar sempre a somar a cada decisão o que distorce a rede por completo! pelo uso de +=
+                    //Em cima já não acontece porque usamos = e dessa maneira sobrepõe o resultado.
 
-    for (int i = 0; i < POPULAÇÃO; i++) {
+    for (int c = 0; c < NÚMERO_NEURÓNIOS_CAMADA_OCULTA; c++) {
 
-        fprintf (z, "Fitness Indivíduo %i -> %lf\n", i, x[i].STORED_FITNESS);        
+        x -> OUTPUT += x -> OUTPUT_NEURÓNIO_HIDDEN_LAYER [c] * GENES [index++];
+
     }
     
-    for (int i = 0; i < NUM_ELITES - 15; i++) {
-        
-        fprintf (z, "\nIndivíduo %i\n", i);
-            
-        for (int j = 0; j < NÚMERO_GENES; j++) {
-        
-            fprintf (z, "%lf | ", x[i].GENES[j]);
-            
+    x -> OUTPUT += GENES [index++];
 
+    x -> OUTPUT = ACTIVATION_FUNCTION_SIGMOID (x -> OUTPUT);
+
+    return x -> OUTPUT;
+
+}
+
+
+void RUN_REDE_NEURAL (REDE_NEURAL *x, TUBOS y [], Texture2D Flappy) { //Structs são passadas por valor (cópia), arrays são passados como ponteiros automaticamente.
+
+    
+    int NEXTPIPE = -1;
+
+    x -> VELOCIDADE_Y += GRAVIDADE;
+    x -> POS_INICIAL_Y += x -> VELOCIDADE_Y;
+
+    Vector2 FLAPPYHITBOX = {
+                            x -> POS_INICIAL_X + (Flappy.width * 0.45 / 2 + 10),
+                            x -> POS_INICIAL_Y + (Flappy.height * 0.45 / 2)                                               
+    };
+
+
+    for (int i = 0; i < NÚMERO_TUBOS; i++) {
+
+
+        Rectangle PIPECIMA = {y[i].POS_EIXO_X, 0, 95, y[i].ALTURA_TUBO_CIMA};
+        Rectangle PIPEBAIXO = {y[i].POS_EIXO_X + 2, (ALTURA - y[i].ALTURA_TUBO_BAIXO), 95, y[i].ALTURA_TUBO_BAIXO};
+        
+
+        COLISÃO_CIMA_REDE_NEURAL = CheckCollisionCircleRec (FLAPPYHITBOX, 20, PIPECIMA);
+        COLISÃO_BAIXO_REDE_NEURAL = CheckCollisionCircleRec (FLAPPYHITBOX, 20, PIPEBAIXO);
+
+        
+        if (y[i].POS_EIXO_X + 95 >= x -> POS_INICIAL_X && NEXTPIPE == -1) {
+    
+            NEXTPIPE = i;
         }
-    }
 
 
-    PESSOA NEW_GEN [POPULAÇÃO];
+        if (COLISÃO_CIMA_REDE_NEURAL == true || COLISÃO_BAIXO_REDE_NEURAL == true) {
+
+            GAME_MODE_AI = false;                 
+        }
     
-    for (int i = 0; i < NUM_ELITES; i++) {
-
-        NEW_GEN [i] = x [i];
         
+        x -> CENTRO_COORDENADA_PIPE = y[i].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0); //À medida que os pipes avançam   
     }
 
 
-    for (int i = NUM_ELITES; i < POPULAÇÃO; i++) {
+    if (NEXTPIPE != -1) {
 
-		int PAI1 = rand() % (NUM_ELITES);
-       
-		int PAI2 = rand() % (NUM_ELITES);
+        x -> X_TO_NEXTPIPE = (y[NEXTPIPE].POS_EIXO_X + 95) - x -> POS_INICIAL_X;
+        x -> CENTRO_COORDENADA_PIPE = y[NEXTPIPE].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0);
+    }
+
+
+    if (x -> POS_INICIAL_Y > (ALTURA - 45) || x -> POS_INICIAL_Y <= 0) {
+
+        GAME_MODE_AI = false;
+    }
+
+    if (NEXTPIPE == -1 && x -> VIVO == true) {
+        
+        WINNER = true;        
+    }
+
+
+    
+    double DECISÃO = REDE_NEURAL_AG ((double) x -> POS_INICIAL_Y / (double) ALTURA, //Input 1 Normalizado
+                       (double) x -> X_TO_NEXTPIPE / (double) LARGURA, // Input 2 Normalizado
+                       (double) x -> VELOCIDADE_Y / (double) 10.0, // Input 3 Normalizado
+                       ((double) x -> CENTRO_COORDENADA_PIPE - (double) x -> POS_INICIAL_Y) / (double) ALTURA, // Input 4 Normalizado 
+                       x); //Ponteiro para a struct única
+
+    if (DECISÃO > 0.5) {
+        x -> VELOCIDADE_Y = -8.8f;    
+    }
+}
+
+
+
+void RUN_PLAYER1 (UTILIZADOR *z, TUBOS y [], Texture2D Flappy) {
+
+    int NEXTPIPE2 = -1;
    
-		FILHOS_NEXT_GERAÇÕES (&NEW_GEN[PAI1], &NEW_GEN[PAI2], &NEW_GEN[i], NÚMERO_GENES);
-	
-	}
-    
+    z -> VELOCIDADE_Y_UTI += GRAVIDADE;
+    z -> POS_INICIAL_Y_UTI += z -> VELOCIDADE_Y_UTI;
 
-    for (int i = 0; i < POPULAÇÃO; i++) {
 
-        x[i] = NEW_GEN[i]; //REPLACEMENT DA POPULAÇÃO
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+	    
+        z -> VELOCIDADE_Y_UTI = -8.8; 
+	};
+			
+
+    Vector2 FLAPPYHITBOX_UTI = {
+                            z -> POS_INICIAL_X_UTI + (Flappy.width * 0.45 / 2 + 10),
+                            z -> POS_INICIAL_Y_UTI + (Flappy.height * 0.45 / 2)                                               
+    };
+
+
+    for (int i = 0; i < NÚMERO_TUBOS; i++) {
+
+        Rectangle PIPECIMA = {y[i].POS_EIXO_X, 0, 95, y[i].ALTURA_TUBO_CIMA};
+        Rectangle PIPEBAIXO = {y[i].POS_EIXO_X + 2, (ALTURA - y[i].ALTURA_TUBO_BAIXO), 95, y[i].ALTURA_TUBO_BAIXO};
+
+        COLISÃO_CIMA_UTILIZADOR = CheckCollisionCircleRec (FLAPPYHITBOX_UTI, 20, PIPECIMA);
+        COLISÃO_BAIXO_UTILIZADOR = CheckCollisionCircleRec (FLAPPYHITBOX_UTI, 20, PIPEBAIXO);
+
         
-        x[i].FITNESS = 0;
-        x[i].STORED_FITNESS = 0;
-        x[i].VIVO = true;
-
-        x[i].POS_INICIAL_X = 150;
-        x[i].POS_INICIAL_Y = 150 + ((double)rand() / RAND_MAX) * (ALTURA - 150);
-        x[i].VELOCIDADE_Y = 0.5;
-
-
+        if (y[i].POS_EIXO_X + 95 >= z -> POS_INICIAL_X_UTI && NEXTPIPE2 == -1) {
+    
+            NEXTPIPE2 = i;
+            printf ("%i", NEXTPIPE2);
+        }   
        
-    }
-}
+        if (COLISÃO_CIMA_UTILIZADOR == true || COLISÃO_BAIXO_UTILIZADOR == true) {
 
-
-
-
-
-void FILHOS_NEXT_GERAÇÕES (PESSOA *PAI1, PESSOA *PAI2, PESSOA *FILHO, int NÚMERO_DE_GENES) {
-
-    for (int i = 0; i < NÚMERO_GENES; i++) {
-        
-        int NUM_RANDOM = (rand() % 2);
-            
-            if (NUM_RANDOM == 0) {
-    
-                FILHO -> GENES[i] = PAI1 -> GENES [i];              
-        } 
-
-            else {
-
-                FILHO -> GENES [i] = PAI2 -> GENES[i];	
+            GAME_MODE = false;                 
         }
     
     }
 
 
-	for (int i = 0; i < NÚMERO_GENES; i++) {
+    if (z -> POS_INICIAL_Y_UTI > (ALTURA - 45) || z -> POS_INICIAL_Y_UTI <= 0) {
 
-		if ((rand() / (double)RAND_MAX) < TAXA_DE_MUTAÇÃO) {
+        GAME_MODE = false;
+    }
 
-			FILHO -> GENES[i] += ((double)rand() / RAND_MAX) * 0.2 - 0.1;	
-
-		}
-	}
-}
-
-
-
-void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
-
-
-    for (int i = 0; i < POPULAÇÃO; i++) {
-
-        if (x[i].VIVO == false) {
-           
-            continue;
+    if (NEXTPIPE2 == -1 && z -> VIVO_UTI == true) {
         
-        }
-   
-        int NEXTPIPE = -1;
-
-        x[i].FITNESS ++;
-
-        x[i].VELOCIDADE_Y += GRAVIDADE;
-        x[i].POS_INICIAL_Y += x[i].VELOCIDADE_Y;
-
-
-
-        Vector2 FLAPPYHITBOX = {
-                                x[i].POS_INICIAL_X + (Flappy.width * 0.45 / 2 + 10),
-                                x[i].POS_INICIAL_Y + (Flappy.height * 0.45 / 2)
-                        };
-    
-       
-        for (int j = 0; j < NÚMERO_TUBOS; j++) {
-
-
-            Rectangle TUBOCIMA = {colunas[j].POS_EIXO_X, 0, 85, colunas[j].ALTURA_TUBO_CIMA};
-            Rectangle TUBOBAIXO = {colunas[j].POS_EIXO_X + 2, (ALTURA - colunas[j].ALTURA_TUBO_BAIXO), 85, colunas[j].ALTURA_TUBO_BAIXO};
-
-
-
-            COLISÃO_CIMA = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOCIMA);
-            COLISÃO_BAIXO = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOBAIXO);
-
-
-            if (colunas[j].POS_EIXO_X + 85 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
-                NEXTPIPE = j;
-            }
-
-                    
-    
-            if (COLISÃO_CIMA == true || COLISÃO_BAIXO == true) {
-
-			    x[i].VIVO = false;
-                
-                MORTES += 1;
-                x[i].STORED_FITNESS = x[i].FITNESS;
-               
-                //x[i].POS_INICIAL_X -= 200.0f;
-                //x[i].POS_INICIAL_Y += 200.0f;  
-
-            }
-
-
-
-            x[i].CENTRO_COORDENADA_PIPE = colunas[j].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0); //INICIO
-        } 
-
-
-       if (NEXTPIPE != -1) { //À MEDIDA QUE PASSA OS PIPES
-
-            x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 85) - x[i].POS_INICIAL_X;
-
-            x[i].CENTRO_COORDENADA_PIPE = colunas[NEXTPIPE].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0);
-        }
-
-
-        if (x[i].POS_INICIAL_Y > (ALTURA - 45) || x[i].POS_INICIAL_Y <= 0) {
-
-            x[i].VIVO = false;
-           
-            MORTES += 1;
-            x[i].STORED_FITNESS = x[i].FITNESS;
-            
-            //x[i].POS_INICIAL_X -= 200.0f;
-            //x[i].POS_INICIAL_Y += 200.0f;
-		
-        }
-
-
-        if (NEXTPIPE == -1 && x[i].VIVO == true) {
-
-                x[i].VIVO = false;
-                x[i].STORED_FITNESS = x[i].FITNESS + 2000; // bónus de vitória
-                MORTES += 1;
-               
-        }
-
-
-      
-        double output = MULTILAYER_PERCEPTRON ((double) x[i].POS_INICIAL_Y / (double) ALTURA,
-                       (double) x[i].X_TO_NEXTPIPE / (double) LARGURA,
-                       (double) x[i].VELOCIDADE_Y / (double) 10.0,
-                       ((double) x[i].CENTRO_COORDENADA_PIPE - (double) x[i].POS_INICIAL_Y) / (double) ALTURA, 
-                       &x[i]);
-
-        
-        if (output > 0.5) {
-            x[i].VELOCIDADE_Y = -8.8f;
-        }
-        
-        
+        WINNER = true;        
     }
 }
-//-------------------------------------------------------------------------- fim ---------------------------------------------------------------------------------------
+
+
+//Mudar velocidade do pipe 
+//Mudar pipes dificuldade
+//Mudar aparência
+//Gravar rede neural a treinar
+//Condição de vitória
+//Esquema de rede a tomar decisões ??
+//WASM Windows
+
+
+
+
+
 
 
 

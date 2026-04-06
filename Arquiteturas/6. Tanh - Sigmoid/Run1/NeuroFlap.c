@@ -7,8 +7,8 @@
 //--------------------------------------------------------------------------------- VARIÁVEIS ---------------------------------------------------------------------------
 
 
-#define LARGURA 1000
-#define ALTURA 550
+#define LARGURA 850
+#define ALTURA 670
 #define FPS 60 
 #define GRAVIDADE 0.5 
 #define POPULAÇÃO 250 
@@ -22,7 +22,7 @@ bool COLISÃO_CIMA = false;
 bool COLISÃO_BAIXO = false;
 bool NEXT_POPULATION = false;
 
-int TUBO_GAP = 180; 
+int TUBO_GAP = 165; 
 int MORTES = 0;
 int GERAÇÃO = 0;
 
@@ -104,7 +104,7 @@ int main () {
    
     
     struct TUBOS colunas [NÚMERO_TUBOS];
-    float POS_INICIAL_X_PRIMEIRO_PIPE = 680;
+    float POS_INICIAL_X_PRIMEIRO_PIPE = 800;
 
 
     for (int i = 0; i < NÚMERO_TUBOS; i++) {
@@ -118,7 +118,7 @@ int main () {
         colunas[i].ALTURA_TUBO_CIMA = ALTURA_TUBO_CIMA;
         colunas[i].ALTURA_TUBO_BAIXO = ALTURA_TUBO_BAIXO;
 
-        POS_INICIAL_X_PRIMEIRO_PIPE += 280;
+        POS_INICIAL_X_PRIMEIRO_PIPE += 320;
 
 	}
 
@@ -128,7 +128,7 @@ int main () {
     GERAÇÃO_0 (x);
 
     FILE* LOGS;
-    LOGS = fopen ("5NEURÓNIOS_Tanh_Sigmoid_NO.txt", "w");
+    LOGS = fopen ("5NEURÓNIOS_Tanh_Sigmoid_N2232323.txt", "w");
         
 
     while (!WindowShouldClose()) {
@@ -139,7 +139,7 @@ int main () {
 
         for (int i = 0; i < NÚMERO_TUBOS; i++) {
            
-             colunas[i].POS_EIXO_X -= 3.0;
+             colunas[i].POS_EIXO_X -= 3.3f;
 		}	
 
 
@@ -181,7 +181,7 @@ int main () {
             if (x[i].VIVO == false) {
                    
                 //x[i].POS_INICIAL_Y += 10.0f;
-                x[i].POS_INICIAL_X -= 3.0f;
+                x[i].POS_INICIAL_X -= 3.3f;
             }    
         }
 
@@ -216,8 +216,8 @@ int main () {
 
 		for (int i = 0; i < NÚMERO_TUBOS; i++) {
 			
-			DrawRectangle (colunas[i].POS_EIXO_X, 0, 85, colunas[i].ALTURA_TUBO_CIMA, WHITE);
-			DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 85, colunas[i].ALTURA_TUBO_BAIXO, WHITE);
+			DrawRectangle (colunas[i].POS_EIXO_X, 0, 95, colunas[i].ALTURA_TUBO_CIMA, WHITE);
+			DrawRectangle (colunas[i].POS_EIXO_X + 2, (ALTURA - colunas[i].ALTURA_TUBO_BAIXO), 95, colunas[i].ALTURA_TUBO_BAIXO, WHITE);
 
             
         }
@@ -280,7 +280,7 @@ double FUNÇÃO_ATIVAÇÃO_SIGMOID (double x) {
 void RESET_JOGO (struct TUBOS colunas []) {
 
 
-    float POS_INICIAL_X_PRIMEIRO_PIPE_2 = 680;
+    float POS_INICIAL_X_PRIMEIRO_PIPE_2 = 800;
 
     for (int i = 0; i < NÚMERO_TUBOS; i++) {
 	
@@ -293,7 +293,7 @@ void RESET_JOGO (struct TUBOS colunas []) {
         colunas[i].ALTURA_TUBO_CIMA = ALTURA_TUBO_CIMA;
         colunas[i].ALTURA_TUBO_BAIXO = ALTURA_TUBO_BAIXO;
 
-        POS_INICIAL_X_PRIMEIRO_PIPE_2 += 280;
+        POS_INICIAL_X_PRIMEIRO_PIPE_2 += 320;
 
 	}
 
@@ -494,8 +494,8 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
         for (int j = 0; j < NÚMERO_TUBOS; j++) {
 
 
-            Rectangle TUBOCIMA = {colunas[j].POS_EIXO_X, 0, 85, colunas[j].ALTURA_TUBO_CIMA};
-            Rectangle TUBOBAIXO = {colunas[j].POS_EIXO_X + 2, (ALTURA - colunas[j].ALTURA_TUBO_BAIXO), 85, colunas[j].ALTURA_TUBO_BAIXO};
+            Rectangle TUBOCIMA = {colunas[j].POS_EIXO_X, 0, 95, colunas[j].ALTURA_TUBO_CIMA};
+            Rectangle TUBOBAIXO = {colunas[j].POS_EIXO_X + 2, (ALTURA - colunas[j].ALTURA_TUBO_BAIXO), 95, colunas[j].ALTURA_TUBO_BAIXO};
 
 
 
@@ -503,7 +503,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
             COLISÃO_BAIXO = CheckCollisionCircleRec (FLAPPYHITBOX, 20, TUBOBAIXO);
 
 
-            if (colunas[j].POS_EIXO_X + 85 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
+            if (colunas[j].POS_EIXO_X + 95 >= x[i].POS_INICIAL_X && NEXTPIPE == -1) { //Enquanto o Boneco tiver atrás do Pipe, o NEXTPIPE vai ser sempre o mesmo índice, só reseta quando for maior que a POS_INICIAL_X
                 NEXTPIPE = j;
             }
 
@@ -529,7 +529,7 @@ void MAIN_LOOP (PESSOA x [], struct TUBOS colunas[], Texture2D Flappy) {
 
        if (NEXTPIPE != -1) { //À MEDIDA QUE PASSA OS PIPES
 
-            x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 85) - x[i].POS_INICIAL_X;
+            x[i].X_TO_NEXTPIPE = (colunas[NEXTPIPE].POS_EIXO_X + 95) - x[i].POS_INICIAL_X;
 
             x[i].CENTRO_COORDENADA_PIPE = colunas[NEXTPIPE].ALTURA_TUBO_CIMA + (TUBO_GAP / 2.0);
         }
