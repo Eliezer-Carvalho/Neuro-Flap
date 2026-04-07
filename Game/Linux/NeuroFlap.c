@@ -2,7 +2,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdio.h>
 
 
 #define LARGURA 850
