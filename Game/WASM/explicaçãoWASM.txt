@@ -1,0 +1,34 @@
+@echo off
+
+Chamar o ambiente virtual do emscripten
+call C:\Users\eliez\emsdk\emsdk_env.bat 
+
+Nome do ficheiro -output
+emcc NeuroFlap.c -o index.html ^
+
+Onde procurar header files. Este caminho é do raylib.h
+-I C:\Users\eliez\raylib\projects\Web ^
+
+Onde procurar bibliotecas. '.' quer dizer nesta pasta. É como se fosse lib
+-L . ^ 
+
+Associa a raylib, por isso o nome ser libraylib.a. Em cima mencionamos o lib e aqui o resto "raylib"
+-lraylib ^ 
+
+Permite inserir ficheiros do sistema na compilação
+--preload-file "C:/Users/eliez/Desktop/Neuro-Flap/Imagens/flappybird2.png" ^ 
+--preload-file "C:/Users/eliez/Desktop/Neuro-Flap/Imagens/flappybird1.png" ^
+
+Diz para usar GLFW na Web (necessário para RayLib) Não pode ter espaços entre =
+-s USE_GLFW=3 ^
+
+Gera WebAssembly em vez de asm.js
+-s WASM=1 ^ 
+
+Aumenta memória em run time
+-s ALLOW_MEMORY_GROWTH=1 ^
+
+Permite pausar/resumir execução
+-s ASYNCIFY 
+
+pause

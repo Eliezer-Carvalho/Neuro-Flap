@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang = "pt-BR">
+
+<head>
+
+  <meta charset="UTF-8">
+  <link rel = "stylesheet" href = "main.css">
+
+</head>
+
+
+<body>
+  <canvas id = "canvas"> </canvas>
+
+  <script>
+
+    var Module = {
+      canvas: document.getElementById("canvas")
+    };
+
+
+    document.addEventListener ("keydown", (event) => {
+      if (event.key === " ") {
+        Module._GAME_ON();
+      }
+    })
+
+  
+
+  </script>
+
+  <script src = "index.js"> </script>
+</body>
+
+
+</html>
