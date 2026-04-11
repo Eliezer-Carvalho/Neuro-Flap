@@ -50,13 +50,18 @@
 
     let gameStarted_MOBILE = false;
 
-    document.canvas.addEventListener("touchstart", () => {
-      if (gameStarted_MOBILE == false) {
+    document.addEventListener("touchstart", (e) => {
+      const canvas = document.querySelector("canvas");
+
+
+      if (!canvas.contains(e.target)) return;
+
+      if (!gameStarted_MOBILE) {
         Module._GAME_ON();
         gameStarted_MOBILE = true;
       } else {
         Module._JUMP();
-      }    
+      }
     });
 
 
