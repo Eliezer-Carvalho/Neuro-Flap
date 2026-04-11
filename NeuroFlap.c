@@ -172,8 +172,8 @@ int main () {
             
             if (GAME_MODE == false && RESTART_GAME == true) {
                 
-                DrawRectangleRounded((Rectangle){100, ALTURA - 125, 300, 85}, 0.1, 1, DARKBLUE);
-                DrawText(TextFormat("Para jogar de novo reinicie a página!"), 118, ALTURA - 90, 15, RAYWHITE);
+                DrawRectangleRounded((Rectangle){100, ALTURA - 125, 680, 100}, 0.1, 1, DARKBLUE);
+                DrawText(TextFormat("Para jogar de novo reinicie a página!"), 118, ALTURA - 90, 35, RAYWHITE);
             }
 
 
