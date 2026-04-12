@@ -74,7 +74,7 @@ Architecture:
   <li> Output Layer -> 2 Neurons with Sigmoid Activation Function </li>
 </ul>
  
-<h3> <a href = "https://eliezer-carvalho.github.io/Neuro-Flap" target = "_blank"> Do you think you can beat it ? :) </a> </h3>
+<h3> <a href = "https://eliezer-carvalho.github.io/Neuro-Flap/" target = "_blank"> Do you think you can beat it ? :) </a> </h3>
 </p>
 
 
