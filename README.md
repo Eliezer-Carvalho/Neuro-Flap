@@ -3,7 +3,7 @@
 <p>  Neuro Flap is a project that applies a Neural Network optimized with Genetic Alghoritms to the game </b><i> Flappy Bird</i>! </p>
 </div>
 
-<p align = "center"> 
+<p align ="center"> 
 <img width = "725" height = "600" src = "https://github.com/user-attachments/assets/74a5a591-e432-4f3f-8f92-d62f829b81b6"> 
 </p>
 
