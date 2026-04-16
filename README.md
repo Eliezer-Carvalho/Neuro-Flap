@@ -1,6 +1,6 @@
 <div align = center> 
 <h1> Neuro Flap </h1>
-<p>  Neuro Flap is a project that applies a Neural Network optimized with Genetic Alghoritms to the game </b><i> Flappy Bird</i>! </p>
+<p>  Neuro Flap is a project that applies a Feedforward Neural Network optimized with Genetic Alghoritms to the game </b><i> Flappy Bird</i>! </p>
 </div>
 
 <p align ="center"> 
