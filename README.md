@@ -10,17 +10,17 @@
 
 <h1> Description </h1>
 <p>
-  <b>Neural Networks are models inspired by the human brain that are capable of machine learning and pattern recognition. </b> <br>
+  <b> Neural Networks are models inspired by the human brain that are capable of machine learning and pattern recognition. </b> <br>
   
-  Developed in C using Raylib, the project includes the implementation of a Perceptron, the Genetic Algorithm training method, and an exploration of Activation Functions and network architectures. 
+  Developed in C using Raylib, the project includes the implementation of a Feedforward Neural Network, the Genetic Algorithm training method, and an exploration of Activation Functions and Network Architectures. 
   The best solutions were subsequently analysed using different hidden layer sizes.
   
-  The final result includes a WebAssembly website that allows users to play against the best-trained network, making the project accessible and interactive!
+  The final result includes a WebAssembly website that allows users to play against the best-trained network. The project is also available at Hugging Face Spaces!
 </p>
 
 
 
-<h1> The Perceptron optimized with Genetic Algorithm </h1>
+<h1> Feedforward Neural Network in C </h1>
 <p>
 <b>The Perceptron</b> is one of the fundamental models underpinning Neural Networks. In its simplest form, it consists of a single layer that connects the inputs to the output, using weights and biases.
 The evolution of this model led to Neural Networks with multiple layers, typically organised into an <b>input layer</b>, <b>hidden layers</b> and an <b>output layer</b>. 
